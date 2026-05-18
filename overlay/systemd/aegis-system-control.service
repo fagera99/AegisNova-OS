@@ -1,0 +1,26 @@
+[Unit]
+Description=AegisNova System Control API (root-level command execution)
+After=network.target aegis-brain.service
+Documentation=https://github.com/aegisnova/os
+
+# ═══════════════════════════════════════════════════════════
+# This service runs the System Control API on port 9091.
+# The JARVIS UI calls it via fetch() to execute real
+# system commands when the user requests full control.
+# ═══════════════════════════════════════════════════════════
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=/root/.Xauthority"
+ExecStart=/usr/bin/python3 /usr/local/bin/aegis-system-control.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aegis-system-ctrl
+
+[Install]
+WantedBy=multi-user.target

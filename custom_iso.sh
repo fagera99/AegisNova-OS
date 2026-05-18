@@ -61,7 +61,7 @@ mkdir -p "${WANTS_MU}"
 for svc in ai-shell ebpf-sensor redteam-auto blue-analyst macos-theme-switcher \
            heretic-decensor ai-proxy ai-master-setup aegisnova-skills \
            mitre-attack-agent sigma-generator osint-agent ir-playbook \
-           aegisnova-vulnscan aegisnova-update aegis-brain; do
+           aegisnova-vulnscan aegisnova-update aegis-brain aegis-system-control; do
     ln -sf "/etc/systemd/system/${svc}.service" "${WANTS_MU}/${svc}.service" 2>/dev/null || true
 done
 

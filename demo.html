@@ -1,42 +1,32 @@
 ﻿<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>JARVIS — AegisNova</title><link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}:root{--bg:#0b0d12;--blue:#00bfff;--blueDim:rgba(0,191,255,.15);--panel:rgba(8,12,20,.88);--border:rgba(0,191,255,.18);--txt:#c8d8e8;--dim:#445566}body{background:var(--bg);color:var(--txt);font-family:"Rajdhani",sans-serif;overflow:hidden;height:100vh;width:100vw;user-select:none}#grid{position:fixed;inset:0;background-image:linear-gradient(rgba(0,191,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,191,255,.04) 1px,transparent 1px);background-size:40px 40px;z-index:0;pointer-events:none}.hud-top{position:fixed;top:0;left:0;right:0;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:50;border-bottom:1px solid var(--border);background:rgba(0,0,0,.5)}.hud-l{display:flex;align-items:center;gap:10px;font-size:.7em;letter-spacing:3px;color:var(--blue)}.hud-r{display:flex;align-items:center;gap:16px;font-size:.68em;color:var(--dim)}.hud-r span{color:var(--txt)}.center{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10}canvas#ring{position:absolute}.ring-label{position:absolute;text-align:center;pointer-events:none}.ring-label .st{font-size:.62em;letter-spacing:5px;color:var(--dim);margin-bottom:2px}.ring-label .nm{font-size:1.9em;font-weight:700;letter-spacing:10px;color:#fff}.dock{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:60}.dbt{width:38px;height:38px;border-radius:8px;border:1px solid var(--border);background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);transition:.2s;position:relative;font-size:1.1em}.dbt:hover,.dbt.on{border-color:var(--blue);color:var(--blue);box-shadow:0 0 10px rgba(0,191,255,.3)}.dbt .tip{position:absolute;bottom:46px;left:50%;transform:translateX(-50%);background:#000;border:1px solid var(--border);padding:3px 8px;border-radius:4px;font-size:.6em;white-space:nowrap;opacity:0;pointer-events:none;transition:.15s;color:#fff}.dbt:hover .tip{opacity:1}.widget{position:fixed;z-index:40;display:none;flex-direction:column;background:var(--panel);border:1px solid var(--border);border-radius:6px;box-shadow:0 0 30px rgba(0,191,255,.12)}.widget.vis{display:flex}.widget-hdr{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:.65em;letter-spacing:3px;color:var(--blue)}.widget-hdr .cls{cursor:pointer;color:var(--dim);font-size:1.1em}.widget-hdr .cls:hover{color:#fff}#wChat{left:16px;top:50px;width:300px;height:340px}#wChat .cbody{flex:1;overflow-y:auto;padding:10px;font-size:.78em;line-height:1.6}#wChat .cmsg{margin-bottom:7px;opacity:0;animation:fi .3s forwards}.cmsg.u{color:var(--blue)}.cmsg.s{color:var(--txt);border-left:2px solid var(--blue);padding-left:7px}.cmsg.a{color:#50d890;font-size:.72em}@keyframes fi{to{opacity:1}}#wChat .cinp{display:flex;gap:6px;padding:8px;border-top:1px solid var(--border)}.cinp input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--txt);padding:6px 10px;font-family:"Rajdhani";font-size:.82em;outline:none;border-radius:3px}.cinp input::placeholder{color:var(--dim)}.cinp button{background:rgba(0,191,255,.1);border:1px solid var(--border);color:var(--blue);padding:0 12px;border-radius:3px;cursor:pointer;font-family:"Rajdhani";font-weight:700}.cinp button:hover{background:rgba(0,191,255,.22)}#wMusic{right:16px;top:50px;width:280px;height:auto}#wMusic .mbody{padding:12px;display:flex;gap:12px;align-items:center}#wMusic .alb{width:58px;height:58px;border-radius:4px;background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.6em;overflow:hidden}#wMusic .alb img{width:100%;height:100%;object-fit:cover}#wMusic .minfo{flex:1;min-width:0}.minfo .mtitle{font-weight:700;font-size:.88em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.minfo .martist{font-size:.72em;color:var(--dim);margin-top:2px}.minfo .mprog{margin-top:6px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;cursor:pointer}.minfo .mbar{height:100%;background:var(--blue);border-radius:2px;width:35%;transition:width .5s}.minfo .mtime{display:flex;justify-content:space-between;font-size:.62em;color:var(--dim);margin-top:3px}#wMusic .mctrl{display:flex;align-items:center;justify-content:center;gap:10px;padding:0 12px 10px}.mctrl button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:1em;padding:4px;border-radius:50%;transition:.15s}.mctrl button:hover{color:var(--blue)}.mctrl .play{color:var(--blue);font-size:1.3em;border:1px solid var(--border);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center}#wCam{right:16px;bottom:70px;width:240px;height:180px}#wCam .cview{flex:1;background:#000;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.7em;letter-spacing:2px;position:relative;overflow:hidden}#wCam .cview video{width:100%;height:100%;object-fit:cover}.camhud{position:absolute;inset:0;pointer-events:none;border:1px solid rgba(0,191,255,.2)}.camhud::before{content:"";position:absolute;top:8px;left:8px;width:16px;height:16px;border-top:2px solid var(--blue);border-left:2px solid var(--blue)}.camhud::after{content:"";position:absolute;bottom:8px;right:8px;width:16px;height:16px;border-bottom:2px solid var(--blue);border-right:2px solid var(--blue)}.rec{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:4px;font-size:.55em;letter-spacing:2px;color:#ff4444}.rec-dot{width:6px;height:6px;border-radius:50%;background:#ff4444;animation:blink 1s infinite}@keyframes blink{50%{opacity:0}}::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(0,191,255,.2);border-radius:2px}</style></head>
-<body><div id="grid"></div><div class="hud-top"><div class="hud-l">⬡ AEGISNOVA &nbsp;|&nbsp; <span id="st">STANDBY</span></div><div class="hud-r"><span id="ck">00:00:00</span>&nbsp;&nbsp;CPU <span id="cpu">12%</span>&nbsp;&nbsp;MEM <span id="mem">28%</span></div></div><div class="center"><canvas id="ring" width="420" height="420"></canvas><div class="ring-label"><div class="st" id="rlbl">STANDBY</div><div class="nm">JARVIS</div></div></div><div class="widget" id="wChat"><div class="widget-hdr"><span>⬥ COMMAND INTERFACE</span><span class="cls" id="closeChat">✕</span></div><div class="cbody" id="cb"><div class="cmsg s">Neural interface online. Standing by, Sir.</div><div class="cmsg a">▸ All systems nominal</div></div><div class="cinp"><input id="ci" placeholder="> enter message..." autocomplete="off"><button id="sb">send ↵</button></div></div><div class="widget" id="wMusic"><div class="widget-hdr"><span>♫ MUSIC</span><span class="cls" id="closeMusic">✕</span></div><div class="mbody"><div class="alb"><img id="alb" src="" onerror="this.style.display='this.nextSibling.style.display='">🎵</div><div class="minfo"><div class="mtitle" id="mtt">Still Into You</div><div class="martist" id="mat">Paramore</div><div class="mprog" id="mprog"><div class="mbar" id="mbar"></div></div><div class="mtime"><span id="mt1">2:04</span><span id="mt2">3:35</span></div></div></div><div class="mctrl"><button id="bprev" title="Prev">⏮</button><button class="play" id="bplay">▶</button><button id="bnext" title="Next">⏭</button><button id="bshuffle" title="Shuffle">⇌</button></div></div><div class="widget" id="wCam"><div class="widget-hdr"><span>◉ CAMERA FEED</span><span class="cls" id="closeCam">✕</span></div><div class="cview"><video id="camv" autoplay muted playsinline></video><div class="camhud"></div><div class="rec"><div class="rec-dot"></div>LIVE</div></div></div><div class="dock"><div class="dbt" id="dCam">◉<div class="tip">Camera</div></div><div class="dbt on" id="dChat">⬥<div class="tip">Chat</div></div><div class="dbt" id="dMusic">♫<div class="tip">Music</div></div></div>
+<body><div id="grid"></div><div class="hud-top"><div class="hud-l">⬡ AEGISNOVA &nbsp;|&nbsp; <span id="st">STANDBY</span></div><div class="hud-r"><span id="ctrlBadge" style="font-size:.65em;border:1px solid rgba(0,191,255,.3);padding:2px 8px;border-radius:3px;letter-spacing:2px;color:var(--dim)">STANDBY</span>&nbsp;&nbsp;<span id="ck">00:00:00</span>&nbsp;&nbsp;CPU <span id="cpu">12%</span>&nbsp;&nbsp;MEM <span id="mem">28%</span></div></div><div class="center"><canvas id="ring" width="420" height="420"></canvas><div class="ring-label"><div class="st" id="rlbl">STANDBY</div><div class="nm">JARVIS</div></div></div><div class="widget" id="wChat"><div class="widget-hdr"><span>⬥ COMMAND INTERFACE</span><span class="cls" id="closeChat">✕</span></div><div class="cbody" id="cb"><div class="cmsg s">Neural interface online. Standing by, Sir.</div><div class="cmsg a">▸ All systems nominal</div></div><div class="cinp"><input id="ci" placeholder="> enter message..." autocomplete="off"><button id="sb">send ↵</button></div></div><div class="widget" id="wMusic"><div class="widget-hdr"><span>♫ MUSIC</span><span class="cls" id="closeMusic">✕</span></div><div class="mbody"><div class="alb"><img id="alb" src="" onerror="this.style.display='this.nextSibling.style.display='">🎵</div><div class="minfo"><div class="mtitle" id="mtt">Still Into You</div><div class="martist" id="mat">Paramore</div><div class="mprog" id="mprog"><div class="mbar" id="mbar"></div></div><div class="mtime"><span id="mt1">2:04</span><span id="mt2">3:35</span></div></div></div><div class="mctrl"><button id="bprev" title="Prev">⏮</button><button class="play" id="bplay">▶</button><button id="bnext" title="Next">⏭</button><button id="bshuffle" title="Shuffle">⇌</button></div></div><div class="widget" id="wCam"><div class="widget-hdr"><span>◉ CAMERA FEED</span><span class="cls" id="closeCam">✕</span></div><div class="cview"><video id="camv" autoplay muted playsinline></video><div class="camhud"></div><div class="rec"><div class="rec-dot"></div>LIVE</div></div></div><div class="dock"><div class="dbt" id="dCam">◉<div class="tip">Camera</div></div><div class="dbt on" id="dChat">⬥<div class="tip">Chat</div></div><div class="dbt" id="dMusic">♫<div class="tip">Music</div></div></div>
 <script>
 // ── Ring ──
 const cv=document.getElementById('ring'),cx=cv.getContext('2d'),W=420,H=420,ox=210,oy=210;
-let t=0,mode='standby';
-const cols={standby:'0,191,255',listening:'80,220,160',thinking:'220,180,80',speaking:'100,200,255'};
+let t=0,mode='standby',fullCtrl=false;
+const cols={standby:'0,191,255',listening:'80,220,160',thinking:'220,180,80',speaking:'100,200,255',danger:'255,60,60'};
 function ring(){
   cx.clearRect(0,0,W,H);
   const c=cols[mode]||cols.standby;
   const spd=mode==='standby'?.006:mode==='listening'?.014:.011;
-  // outer dots
   for(let i=0;i<72;i++){
     const a=t*spd*0.5+i*Math.PI*2/72;
     if(Math.sin(a*4+t*.01)>0.2){
-      const r=170;
-      cx.beginPath();cx.arc(ox+Math.cos(a)*r,oy+Math.sin(a)*r,1.2,0,Math.PI*2);
+      const r=170;cx.beginPath();cx.arc(ox+Math.cos(a)*r,oy+Math.sin(a)*r,1.2,0,Math.PI*2);
       cx.fillStyle=`rgba(${c},.3)`;cx.fill();
     }
   }
-  // main arc
-  const a1=t*spd;
-  cx.beginPath();cx.arc(ox,oy,155,a1,a1+1.4);
+  const a1=t*spd;cx.beginPath();cx.arc(ox,oy,155,a1,a1+1.4);
   cx.strokeStyle=`rgba(${c},.8)`;cx.lineWidth=2.5;cx.stroke();
-  // counter arc
-  const a2=-t*spd*.7+Math.PI*.5;
-  cx.beginPath();cx.arc(ox,oy,145,a2,a2+.9);
+  const a2=-t*spd*.7+Math.PI*.5;cx.beginPath();cx.arc(ox,oy,145,a2,a2+.9);
   cx.strokeStyle=`rgba(${c},.5)`;cx.lineWidth=1.5;cx.stroke();
-  // inner ring
   cx.beginPath();cx.arc(ox,oy,120,0,Math.PI*2);
   cx.strokeStyle=`rgba(${c},.12)`;cx.lineWidth=1;cx.stroke();
-  // glow
   const g=cx.createRadialGradient(ox,oy,0,ox,oy,130);
   g.addColorStop(0,`rgba(${c},.13)`);g.addColorStop(1,`rgba(${c},0)`);
   cx.fillStyle=g;cx.fillRect(0,0,W,H);
-  // particles
   for(let i=0;i<6;i++){
-    const a=t*spd*.5+i*Math.PI/3;
-    const r=165+Math.sin(t*.04+i)*6;
+    const a=t*spd*.5+i*Math.PI/3,r=165+Math.sin(t*.04+i)*6;
     cx.beginPath();cx.arc(ox+Math.cos(a)*r,oy+Math.sin(a)*r,1.8,0,Math.PI*2);
     cx.fillStyle=`rgba(${c},.55)`;cx.fill();
   }
@@ -45,9 +35,51 @@ function ring(){
 ring();
 
 function setMode(m,lbl){
-  mode=m;
-  document.getElementById('rlbl').textContent=lbl;
+  mode=m;document.getElementById('rlbl').textContent=lbl;
   document.getElementById('st').textContent=lbl;
+}
+
+// ── API ──
+const API='http://localhost:9091';
+let apiOnline=false;
+
+async function apiPost(path,data){
+  try{
+    const r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    return await r.json();
+  }catch(e){return{ok:false,output:'[API offline — UI mode only]'};}
+}
+
+async function pollStatus(){
+  try{
+    const r=await fetch(API+'/status');
+    const d=await r.json();
+    apiOnline=true;
+    document.getElementById('cpu').textContent=d.cpu||'--';
+    document.getElementById('mem').textContent=d.mem||'--';
+    document.getElementById('ck').textContent=d.time||new Date().toLocaleTimeString('en-GB');
+    if(d.full_control!==undefined&&d.full_control!==fullCtrl){
+      fullCtrl=d.full_control;updateControlBadge();
+    }
+  }catch(e){
+    apiOnline=false;
+    document.getElementById('ck').textContent=new Date().toLocaleTimeString('en-GB');
+  }
+}
+
+function updateControlBadge(){
+  const badge=document.getElementById('ctrlBadge');
+  if(fullCtrl){
+    badge.textContent='⚡ FULL CONTROL';
+    badge.style.color='#ff4444';
+    badge.style.borderColor='#ff4444';
+    setMode('danger','FULL CONTROL');
+    setTimeout(()=>setMode('standby','STANDBY'),3000);
+  }else{
+    badge.textContent='STANDBY';
+    badge.style.color='';
+    badge.style.borderColor='';
+  }
 }
 
 // ── Chat ──
@@ -56,26 +88,39 @@ function addMsg(tx,tp='s'){
   const d=document.createElement('div');d.className='cmsg '+tp;
   d.textContent=tx;cb.appendChild(d);cb.scrollTop=cb.scrollHeight;
 }
-function cmd(tx){
-  addMsg('$ '+tx,'u');setMode('thinking','PROCESSING');
-  setTimeout(()=>{
-    const l=tx.toLowerCase();
-    if(l.includes('music')||l.includes('open music')){toggleWidget('wMusic','dMusic');addMsg('> Opening the music widget.','s');}
-    else if(l.includes('camera')||l.includes('cam')){toggleWidget('wCam','dCam');addMsg('> Camera feed activated.','s');}
-    else if(l.includes('close music')){closeW('wMusic','dMusic');addMsg('> Closing the music widget.','s');}
-    else if(l.includes('close cam')||l.includes('close camera')){closeW('wCam','dCam');addMsg('> Camera feed closed.','s');}
-    else if(l.includes('close chat')){closeW('wChat','dChat');addMsg('> Closing the chat.','s');}
-    else if(l.includes('open chat')){openW('wChat','dChat');addMsg('> Opening the chat.','s');}
-    else if(l.includes('attack')){addMsg('> Offensive swarm deployed. VIPER and GHOST engaging target.','s');addMsg('▸ Recon phase initiated','a');}
-    else if(l.includes('defend')){addMsg('> Defensive protocols active. SENTINEL securing perimeter.','s');}
-    else if(l.includes('scan')){addMsg('> Network scan started. Analyzing topology...','s');addMsg('▸ Ports: 22, 80, 443 detected','a');}
-    else if(l.includes('status')){addMsg('> All systems nominal. 8 agents active. Threat: LOW.','s');}
-    else if(l.includes('iron man')||l.includes('jarvis')){addMsg('> I am AEGIS, Sir. Shall I prepare the suit?','s');}
-    else{addMsg('> Command acknowledged. Standing by.','s');addMsg('▸ Success — no errors','a');}
-    setMode('speaking','RESPONDING');
-    setTimeout(()=>setMode('standby','STANDBY'),2200);
-  },700);
+
+async function cmd(tx){
+  addMsg('$ '+tx,'u');
+  setMode('thinking','PROCESSING');
+
+  const l=tx.toLowerCase();
+
+  // Widget controls (local — no API needed)
+  if(l.includes('open music')||l==='music'){toggleWidget('wMusic','dMusic');addMsg('> Music widget opened.','s');setMode('speaking','RESPONDING');setTimeout(()=>setMode('standby','STANDBY'),1500);return;}
+  if(l.includes('close music')){closeW('wMusic','dMusic');addMsg('> Music widget closed.','s');setMode('speaking','RESPONDING');setTimeout(()=>setMode('standby','STANDBY'),1500);return;}
+  if(l.includes('open camera')||l.includes('open cam')){toggleWidget('wCam','dCam');if(document.getElementById('wCam').classList.contains('vis'))startCam();addMsg('> Camera feed activated.','s');setMode('speaking','RESPONDING');setTimeout(()=>setMode('standby','STANDBY'),1500);return;}
+  if(l.includes('close cam')||l.includes('close camera')){closeW('wCam','dCam');stopCam();addMsg('> Camera closed.','s');setMode('speaking','RESPONDING');setTimeout(()=>setMode('standby','STANDBY'),1500);return;}
+  if(l.includes('close chat')){closeW('wChat','dChat');return;}
+  if(l.includes('open chat')){openW('wChat','dChat');addMsg('> Chat reopened.','s');setMode('speaking','RESPONDING');setTimeout(()=>setMode('standby','STANDBY'),1500);return;}
+
+  // Send to API
+  const res=await apiPost('/cmd',{text:tx});
+  const out=res.output||res.error||'Done.';
+
+  if(res.full_control){fullCtrl=true;updateControlBadge();}
+
+  // Multi-line output
+  out.split('\n').filter(Boolean).forEach(line=>{
+    const tp=line.startsWith('▸')||line.startsWith('>')?'a':'s';
+    addMsg(line,tp);
+  });
+
+  if(!res.ok&&!apiOnline){addMsg('▸ [API offline — service not running on port 9091]','a');}
+
+  setMode('speaking','RESPONDING');
+  setTimeout(()=>setMode('standby','STANDBY'),2200);
 }
+
 ci.addEventListener('keypress',e=>{if(e.key==='Enter'&&ci.value.trim()){cmd(ci.value.trim());ci.value='';}});
 document.getElementById('sb').addEventListener('click',()=>{if(ci.value.trim()){cmd(ci.value.trim());ci.value='';}});
 
@@ -89,34 +134,41 @@ document.getElementById('closeCam').onclick=()=>{closeW('wCam','dCam');stopCam()
 document.getElementById('dChat').onclick=()=>toggleWidget('wChat','dChat');
 document.getElementById('dMusic').onclick=()=>toggleWidget('wMusic','dMusic');
 document.getElementById('dCam').onclick=()=>{toggleWidget('wCam','dCam');if(document.getElementById('wCam').classList.contains('vis'))startCam();else stopCam();};
-// open chat by default
 openW('wChat','dChat');
 
 // ── Camera ──
 let camStream=null;
 async function startCam(){
   try{camStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});document.getElementById('camv').srcObject=camStream;}
-  catch(e){document.getElementById('camv').style.display='none';}
+  catch(e){console.log('Camera:',e);}
 }
 function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;document.getElementById('camv').srcObject=null;}}
 
 // ── Music ──
-let playing=false,prog=35;
+let playing=false,prog=35,ti=0;
 const tracks=[{t:'Still Into You',a:'Paramore',c1:'#e85d04',c2:'#f48c06'},{t:'Believer',a:'Imagine Dragons',c1:'#7209b7',c2:'#3a0ca3'},{t:'Blinding Lights',a:'The Weeknd',c1:'#e63946',c2:'#c1121f'}];
-let ti=0;
 function setTrack(i){ti=i;document.getElementById('mtt').textContent=tracks[i].t;document.getElementById('mat').textContent=tracks[i].a;document.getElementById('alb').style.background=`linear-gradient(135deg,${tracks[i].c1},${tracks[i].c2})`;}
 setTrack(0);
-document.getElementById('bplay').onclick=function(){playing=!playing;this.textContent=playing?'⏸':'▶';};
-document.getElementById('bnext').onclick=()=>{ti=(ti+1)%tracks.length;setTrack(ti);};
-document.getElementById('bprev').onclick=()=>{ti=(ti-1+tracks.length)%tracks.length;setTrack(ti);};
+document.getElementById('bplay').onclick=function(){
+  playing=!playing;this.textContent=playing?'⏸':'▶';
+  if(apiOnline)apiPost('/cmd',{text:playing?'play':'pause'});
+};
+document.getElementById('bnext').onclick=()=>{ti=(ti+1)%tracks.length;setTrack(ti);if(apiOnline)apiPost('/cmd',{text:'next track'});};
+document.getElementById('bprev').onclick=()=>{ti=(ti-1+tracks.length)%tracks.length;setTrack(ti);if(apiOnline)apiPost('/cmd',{text:'previous track'});};
 document.getElementById('mprog').onclick=function(e){prog=Math.round(e.offsetX/this.offsetWidth*100);document.getElementById('mbar').style.width=prog+'%';};
 setInterval(()=>{if(playing){prog=Math.min(prog+.2,100);document.getElementById('mbar').style.width=prog+'%';if(prog>=100){prog=0;ti=(ti+1)%tracks.length;setTrack(ti);}}},500);
 
-// ── HUD ──
+// ── HUD polling ──
+setInterval(pollStatus,3000);
+pollStatus();
+
+// ── Agent ticker ──
 setInterval(()=>{
-  document.getElementById('ck').textContent=new Date().toLocaleTimeString('en-GB');
-  document.getElementById('cpu').textContent=Math.floor(8+Math.random()*20)+'%';
-  document.getElementById('mem').textContent=Math.floor(22+Math.random()*15)+'%';
-  if(Math.random()>.75&&mode==='standby'){const ag=['VIPER','GHOST','SENTINEL','OWL'];const ac=['scanning','monitoring','patrolling','idle'];addMsg(`▸ ${ag[0|Math.random()*ag.length]} ${ac[0|Math.random()*ac.length]}`,'a');}
-},3000);
+  if(Math.random()>.72&&mode==='standby'){
+    const ag=['VIPER','GHOST','SENTINEL','OWL','PHANTOM'];
+    const ac=['scanning','monitoring','patrolling','analyzing','idle'];
+    addMsg(`▸ ${ag[0|Math.random()*ag.length]} ${ac[0|Math.random()*ac.length]}`,'a');
+  }
+},5000);
 </script></body></html>
+
