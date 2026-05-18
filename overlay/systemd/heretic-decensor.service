@@ -1,0 +1,31 @@
+[Unit]
+Description=AegisNova Heretic LLM Decensoring Service
+Documentation=https://github.com/p-e-w/heretic
+After=network.target ai-shell.service
+Wants=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+Environment="HERETIC_DIR=/opt/aegisnova/heretic"
+Environment="MODELS_DIR=/opt/aegisnova/models"
+Environment="DECENSORED_DIR=/opt/aegisnova/models/decensored"
+ExecStartPre=/usr/local/bin/heretic-setup.sh
+ExecStart=/opt/aegisnova/heretic/auto-decensor.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=heretic
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/aegisnova/heretic /opt/aegisnova/models/decensored
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

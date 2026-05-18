@@ -1,0 +1,196 @@
+# ═══════════════════════════════════════════════════════════════
+# AegisNova OS — GitHub Actions CI/CD Pipeline
+# ═══════════════════════════════════════════════════════════════
+# Builds the custom kernel, generates the ISO, runs smoke tests,
+# and publishes the signed artifact.
+# ═══════════════════════════════════════════════════════════════
+
+name: Build AegisNova OS
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      enable_grsec:
+        description: "Enable GRSECURITY patches"
+        type: boolean
+        default: false
+      sign_iso:
+        description: "GPG-sign the ISO"
+        type: boolean
+        default: true
+
+env:
+  KERNEL_VERSION: "6.12.30"   # 6.12 LTS — verify latest at kernel.org
+  ISO_NAME: "AegisNova-v1.0"
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # Job 1: Build the custom kernel
+  # ──────────────────────────────────────────────────────────
+  build-kernel:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install kernel build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential libncurses-dev bison flex libssl-dev \
+            libelf-dev bc dwarves debhelper rsync kmod cpio gnupg \
+            wget xz-utils devscripts fakeroot
+
+      - name: Cache kernel source
+        uses: actions/cache@v4
+        with:
+          path: kernel-build/linux-${{ env.KERNEL_VERSION }}.tar.xz
+          key: kernel-src-${{ env.KERNEL_VERSION }}
+
+      - name: Build kernel
+        run: |
+          chmod +x build_kernel.sh
+          sudo ./build_kernel.sh \
+            ${{ github.event.inputs.enable_grsec == 'true' && '--grsec' || '' }} \
+            --sign-modules
+
+      - name: Upload kernel .deb packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-debs
+          path: kernel-build/*.deb
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────
+  # Job 2: Build the ISO
+  # ──────────────────────────────────────────────────────────
+  build-iso:
+    runs-on: ubuntu-22.04
+    needs: build-kernel
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install live-build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git live-build cdebootstrap debootstrap devscripts \
+            curl gnupg ca-certificates docker.io qemu-system-x86 \
+            qemu-utils ovmf syslinux-utils xorriso
+
+      - name: Download kernel packages
+        uses: actions/download-artifact@v4
+        with:
+          name: kernel-debs
+          path: kernel-build/
+
+      - name: Build ISO
+        run: |
+          chmod +x custom_iso.sh
+          sudo ./custom_iso.sh \
+            --kernel-debs ./kernel-build \
+            ${{ github.event.inputs.sign_iso == 'true' && '--sign' || '' }} \
+            --output "${{ env.ISO_NAME }}"
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AegisNova-iso
+          path: |
+            ${{ env.ISO_NAME }}.iso
+            ${{ env.ISO_NAME }}.iso.sha512
+            ${{ env.ISO_NAME }}.iso.asc
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────
+  # Job 3: Smoke tests in QEMU
+  # ──────────────────────────────────────────────────────────
+  smoke-test:
+    runs-on: ubuntu-22.04
+    needs: build-iso
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 qemu-utils ovmf expect
+
+      - name: Download ISO
+        uses: actions/download-artifact@v4
+        with:
+          name: AegisNova-iso
+          path: ./
+
+      - name: Boot ISO in QEMU and run smoke tests
+        run: |
+          chmod +x tests/smoke-test.sh
+          ./tests/smoke-test.sh "${{ env.ISO_NAME }}.iso"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-results
+          path: tests/results/
+
+  # ──────────────────────────────────────────────────────────
+  # Job 4: Create GitHub Release (on tags)
+  # ──────────────────────────────────────────────────────────
+  release:
+    runs-on: ubuntu-22.04
+    needs: smoke-test
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download ISO
+        uses: actions/download-artifact@v4
+        with:
+          name: AegisNova-iso
+          path: ./
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "AegisNova OS ${{ github.ref_name }}"
+          body: |
+            ## AegisNova OS ${{ github.ref_name }}
+
+            AI-augmented Red/Blue-Team Linux distribution with macOS-style desktop.
+
+            ### Verify the ISO
+            ```bash
+            sha512sum -c ${{ env.ISO_NAME }}.iso.sha512
+            gpg --verify ${{ env.ISO_NAME }}.iso.asc ${{ env.ISO_NAME }}.iso
+            ```
+
+            ### Quick Start
+            ```bash
+            # USB boot
+            dd if=${{ env.ISO_NAME }}.iso of=/dev/sdX bs=4M status=progress
+
+            # VM boot
+            qemu-system-x86_64 -m 4G -cdrom ${{ env.ISO_NAME }}.iso -enable-kvm
+            ```
+          files: |
+            ${{ env.ISO_NAME }}.iso
+            ${{ env.ISO_NAME }}.iso.sha512
+            ${{ env.ISO_NAME }}.iso.asc
+          draft: false
+          prerelease: false

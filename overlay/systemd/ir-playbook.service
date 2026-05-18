@@ -1,0 +1,18 @@
+[Unit]
+Description=AegisNova Incident Response Playbook Agent
+Documentation=https://github.com/aegisnova/os
+After=network.target auditd.service
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/bin/echo "IR Playbook Agent ready. Use: ir-playbook.py --playbook <name> --target <target>"
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ir-playbook
+
+[Install]
+WantedBy=multi-user.target

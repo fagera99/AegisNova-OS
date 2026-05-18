@@ -1,0 +1,78 @@
+# ═══════════════════════════════════════════════════════════
+# AegisNova OS — Red-Team Package List
+# ═══════════════════════════════════════════════════════════
+
+# Recon
+nmap
+amass
+spiderfoot
+theharvester
+recon-ng
+masscan
+dnsrecon
+subfinder
+httpx-toolkit
+nuclei
+
+# Exploitation
+metasploit-framework
+exploitdb
+searchsploit
+sqlmap
+commix
+beef-xss
+
+# Post-Exploitation
+empire-powershell
+crackmapexec
+bloodhound
+pwncat
+evil-winrm
+chisel
+ligolo-ng
+impacket-scripts
+
+# Credential Harvesting
+hashcat
+john
+hydra
+medusa
+responder
+mimikatz
+
+# Defense Evasion
+veil
+shellter
+
+# Web Application
+burpsuite
+zaproxy
+nikto
+wfuzz
+ffuf
+gobuster
+feroxbuster
+dirb
+
+# Wireless
+aircrack-ng
+wifite
+bettercap
+kismet
+
+# Adversary Simulation
+caldera
+atomic-red-team
+
+# Payload / C2
+sliver
+havoc
+covenant
+
+# Utilities
+seclists
+wordlists
+proxychains4
+tor
+socat
+ncat

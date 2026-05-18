@@ -1,0 +1,15 @@
+[Unit]
+Description=AegisNova Master AI Setup (Decensoring All Models)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/bin/ai-master-setup.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

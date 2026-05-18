@@ -1,0 +1,19 @@
+[Unit]
+Description=AegisNova MITRE ATT&CK Mapping Agent
+Documentation=https://attack.mitre.org/
+After=network.target ai-shell.service
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/python3 /usr/local/bin/mitre-attack-agent.py --download-data
+Restart=on-failure
+RestartSec=300
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mitre-attack-agent
+
+[Install]
+WantedBy=multi-user.target

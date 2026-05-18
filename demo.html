@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AEGIS — Demo Preview</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #00ff88;
+            --primary-dim: rgba(0,255,136,0.3);
+            --secondary: #00ccff;
+            --danger: #ff3366;
+            --bg: #050505;
+            --panel: rgba(10,20,30,0.92);
+            --grid: rgba(0,255,136,0.08);
+        }
+        body {
+            background: var(--bg);
+            color: var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #bg {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background-image:
+                linear-gradient(var(--grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 15s linear infinite;
+            z-index: 1;
+        }
+        @keyframes gridMove {
+            0% { transform: perspective(600px) rotateX(55deg) translateY(0); }
+            100% { transform: perspective(600px) rotateX(55deg) translateY(40px); }
+        }
+        #matrix {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            z-index: 2; opacity: 0.12; pointer-events: none;
+        }
+        .scanline {
+            position: fixed; top:0; left:0; width:100%; height:3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            animation: scan 3s linear infinite;
+            z-index: 1000; pointer-events: none;
+        }
+        @keyframes scan { 0%{top:0;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:100%;opacity:0} }
+
+        .hud {
+            position: relative; z-index: 10;
+            display: grid;
+            grid-template-columns: 260px 1fr 260px;
+            grid-template-rows: 55px 1fr 170px;
+            gap: 12px; padding: 12px;
+            height: 100vh;
+        }
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--primary-dim);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(8px);
+        }
+        .panel::before {
+            content: ''; position: absolute; top:0; left:0; right:0; height:2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        .panel-header {
+            padding: 7px 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7em; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 3px;
+            border-bottom: 1px solid var(--primary-dim);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .panel-header::before { content: '◆'; animation: blink 1.2s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .top-bar {
+            grid-column: 1 / -1;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 18px;
+        }
+        .logo-section { display: flex; align-items: center; gap: 12px; }
+        .logo-icon {
+            width: 36px; height: 36px; border: 2px solid var(--primary); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron'; font-weight: 900; font-size: 1.1em;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 15px var(--primary-dim);
+        }
+        @keyframes pulse { 0%,100%{box-shadow:0 0 15px var(--primary-dim)} 50%{box-shadow:0 0 35px var(--primary)} }
+        .logo-text {
+            font-family: 'Orbitron'; font-size: 1.4em; font-weight: 900;
+            letter-spacing: 8px; text-shadow: 0 0 15px var(--primary);
+        }
+        .sys-status { display: flex; gap: 18px; font-size: 0.72em; }
+        .status-item { display: flex; align-items: center; gap: 5px; }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); animation: blink 2s infinite; }
+        .status-dot.warn { background: var(--danger); }
+
+        .agent-list { padding: 8px; overflow-y: auto; height: calc(100% - 30px); }
+        .agent-item {
+            padding: 7px; margin-bottom: 5px;
+            border-left: 3px solid var(--primary);
+            background: rgba(0,255,136,0.04);
+            font-size: 0.78em; transition: all 0.3s;
+        }
+        .agent-item:hover { background: rgba(0,255,136,0.12); transform: translateX(4px); }
+        .agent-name { font-family: 'Orbitron'; font-weight: 700; color: var(--secondary); font-size: 0.95em; }
+        .agent-type { font-size: 0.72em; opacity: 0.65; }
+        .agent-bar { height: 2px; background: linear-gradient(90deg, var(--primary), var(--secondary)); margin-top: 3px; width: 0%; transition: width 1.5s; }
+
+        .neural-core {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .core-wrap { width: 280px; height: 280px; position: relative; }
+        #coreCanvas { width: 100%; height: 100%; }
+        .core-state {
+            font-family: 'Orbitron'; font-size: 1.1em; letter-spacing: 4px;
+            text-transform: uppercase; color: var(--secondary); margin-top: 12px;
+        }
+        .cmd-row {
+            margin-top: 16px; display: flex; gap: 10px;
+            width: 100%; max-width: 480px; padding: 0 18px;
+        }
+        .cmd-input {
+            flex: 1; background: rgba(0,0,0,0.8);
+            border: 1px solid var(--primary); color: var(--primary);
+            padding: 11px 18px; font-family: 'Share Tech Mono'; font-size: 0.95em;
+            outline: none; border-radius: 2px;
+        }
+        .cmd-input::placeholder { color: rgba(0,255,136,0.25); }
+        .mic-btn {
+            width: 46px; height: 46px; border-radius: 50%;
+            border: 2px solid var(--primary); background: rgba(0,255,136,0.1);
+            color: var(--primary); font-size: 1.2em; cursor: pointer;
+            transition: all 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+        .mic-btn:hover { background: rgba(0,255,136,0.3); box-shadow: 0 0 25px var(--primary-dim); }
+
+        .metrics { padding: 8px; height: calc(100% - 30px); overflow-y: auto; }
+        .metric { margin-bottom: 10px; padding: 6px; background: rgba(0,0,0,0.3); border-left: 2px solid var(--secondary); }
+        .metric-label { font-size: 0.65em; text-transform: uppercase; letter-spacing: 2px; color: var(--secondary); margin-bottom: 2px; }
+        .metric-val { font-family: 'Orbitron'; font-size: 1em; }
+        .m-bar { height: 2px; background: #222; margin-top: 3px; position: relative; }
+        .m-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.6s; position: relative; }
+        .m-fill::after { content:''; position:absolute; right:0; top:0; width:15px; height:100%; background: linear-gradient(90deg, transparent, white); animation: shimmer 2s infinite; }
+        @keyframes shimmer { 0%{transform:translateX(-15px)} 100%{transform:translateX(15px)} }
+
+        .terminal { grid-column: 1 / -1; display: flex; flex-direction: column; }
+        .term-out { flex: 1; padding: 10px; font-size: 0.82em; overflow-y: auto; color: #ccffdd; line-height: 1.55; }
+        .t-line { margin-bottom: 3px; opacity: 0; animation: fadeIn 0.3s forwards; }
+        .t-line.cmd { color: var(--secondary); }
+        .t-line.res { padding-left: 16px; border-left: 2px solid var(--primary-dim); }
+        .t-line.ok { color: var(--primary); }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-dim); border-radius: 2px; }
+        .glitch { position: relative; }
+        .glitch::before, .glitch::after {
+            content: attr(data-text); position: absolute; top:0; left:0; width:100%; height:100%;
+        }
+        .glitch::before { left:2px; text-shadow: -2px 0 var(--danger); clip: rect(20px, 999px, 80px, 0); animation: glitch 2.5s infinite linear alternate-reverse; }
+        .glitch::after { left:-2px; text-shadow: -2px 0 var(--secondary); clip: rect(75px, 999px, 130px, 0); animation: glitch 2s infinite linear alternate-reverse; }
+        @keyframes glitch { 0%{clip:rect(8px,9999px,75px,0)} 20%{clip:rect(60px,9999px,90px,0)} 40%{clip:rect(12px,9999px,120px,0)} 60%{clip:rect(70px,9999px,5px,0)} 80%{clip:rect(35px,9999px,100px,0)} 100%{clip:rect(85px,9999px,55px,0)} }
+    </style>
+</head>
+<body>
+    <div id="bg"></div>
+    <canvas id="matrix"></canvas>
+    <div class="scanline"></div>
+
+    <div class="hud">
+        <!-- Top Bar -->
+        <div class="panel top-bar">
+            <div class="logo-section">
+                <div class="logo-icon">A</div>
+                <div class="logo-text glitch" data-text="AEGIS">AEGIS</div>
+            </div>
+            <div class="sys-status">
+                <div class="status-item"><div class="status-dot"></div><span>BRAIN: ONLINE</span></div>
+                <div class="status-item"><div class="status-dot"></div><span>SECURITY: ARMED</span></div>
+                <div class="status-item"><div class="status-dot"></div><span>NET: ACTIVE</span></div>
+                <div class="status-item"><span id="clock">00:00:00</span></div>
+            </div>
+        </div>
+
+        <!-- Left: Agent Swarm -->
+        <div class="panel">
+            <div class="panel-header">Agent Swarm</div>
+            <div class="agent-list">
+                <div class="agent-item">
+                    <div class="agent-name">VIPER</div>
+                    <div class="agent-type">Offensive Coordinator — "Target acquired. Executing."</div>
+                    <div class="agent-bar" style="width:0%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">GHOST</div>
+                    <div class="agent-type">Silent Infiltrator — "..."</div>
+                    <div class="agent-bar" style="width:0%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">PHANTOM</div>
+                    <div class="agent-type">Lateral Movement — "I'm already inside."</div>
+                    <div class="agent-bar" style="width:0%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">REAPER</div>
+                    <div class="agent-type">Persistence Architect — "I don't leave. Ever."</div>
+                    <div class="agent-bar" style="width:0%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">SENTINEL</div>
+                    <div class="agent-type">Perimeter Guardian — "Nothing gets past me."</div>
+                    <div class="agent-bar" style="width:0%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">OWL</div>
+                    <div class="agent-type">Threat Hunter — "I see what you did there."</div>
+                    <div class="agent-bar" style="width:0%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">SHIELD</div>
+                    <div class="agent-type">Incident Responder — "I'm on it. Stand back."</div>
+                    <div class="agent-bar" style="width:0%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">WALL</div>
+                    <div class="agent-type">Hardening Expert — "Fortify everything."</div>
+                    <div class="agent-bar" style="width:0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center: Neural Core -->
+        <div class="panel neural-core">
+            <div class="core-wrap">
+                <canvas id="coreCanvas"></canvas>
+            </div>
+            <div class="core-state" id="coreState">SYSTEM READY</div>
+            <div class="cmd-row">
+                <input type="text" class="cmd-input" id="cmdIn" placeholder="Type command or say 'Hey Aegis'..." autofocus>
+                <button class="mic-btn" id="micBtn">🎤</button>
+            </div>
+        </div>
+
+        <!-- Right: System Metrics -->
+        <div class="panel">
+            <div class="panel-header">System Metrics</div>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-label">CPU Load</div>
+                    <div class="metric-val" id="cpuVal">34%</div>
+                    <div class="m-bar"><div class="m-fill" id="cpuBar" style="width:34%"></div></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Memory</div>
+                    <div class="metric-val" id="memVal">2.4GB / 8GB</div>
+                    <div class="m-bar"><div class="m-fill" id="memBar" style="width:30%"></div></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Network</div>
+                    <div class="metric-val" id="netVal">↑ 2.4MB/s ↓ 8.1MB/s</div>
+                    <div class="m-bar"><div class="m-fill" id="netBar" style="width:45%"></div></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Threat Level</div>
+                    <div class="metric-val" id="threatVal" style="color:var(--primary)">LOW</div>
+                    <div class="m-bar"><div class="m-fill" id="threatBar" style="width:15%"></div></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Active Agents</div>
+                    <div class="metric-val">8 / 50</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom: Terminal -->
+        <div class="panel terminal">
+            <div class="panel-header">Command Output</div>
+            <div class="term-out" id="termOut">
+                <div class="t-line ok">[AEGIS] Neural interface initialized. All systems nominal.</div>
+                <div class="t-line res">Type a command or click the microphone to speak.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Matrix Rain ──
+        const mc = document.getElementById('matrix');
+        const mctx = mc.getContext('2d');
+        mc.width = window.innerWidth; mc.height = window.innerHeight;
+        const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+        const cols = mc.width / 14;
+        const drops = Array(Math.floor(cols)).fill(1);
+        function drawM() {
+            mctx.fillStyle = 'rgba(0,0,0,0.04)';
+            mctx.fillRect(0, 0, mc.width, mc.height);
+            mctx.fillStyle = '#0F0'; mctx.font = '14px monospace';
+            for(let i=0;i<drops.length;i++){
+                const t = chars[Math.floor(Math.random()*chars.length)];
+                mctx.fillText(t, i*14, drops[i]*14);
+                if(drops[i]*14 > mc.height && Math.random()>0.975) drops[i]=0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawM, 50);
+
+        // ── Neural Core ──
+        const cc = document.getElementById('coreCanvas');
+        const cctx = cc.getContext('2d');
+        cc.width = 280; cc.height = 280;
+        let t = 0, state='idle';
+        function drawCore() {
+            const cx=140, cy=140;
+            cctx.clearRect(0,0,280,280);
+            // Rings
+            for(let i=0;i<3;i++){
+                const r = 75+i*25+Math.sin(t*0.02+i)*8;
+                const a = 0.08+Math.sin(t*0.025+i*2)*0.08;
+                cctx.beginPath(); cctx.arc(cx,cy,r,0,Math.PI*2);
+                cctx.strokeStyle=`rgba(0,255,136,${a})`; cctx.lineWidth=2; cctx.stroke();
+            }
+            // Arcs
+            for(let i=0;i<8;i++){
+                const ang = (t*0.008+i*Math.PI/4)%(Math.PI*2);
+                cctx.beginPath(); cctx.arc(cx,cy,95,ang,ang+0.5);
+                cctx.strokeStyle=`rgba(0,255,136,${0.25+Math.sin(t*0.04+i)*0.2})`;
+                cctx.lineWidth=3; cctx.stroke();
+            }
+            // Glow
+            const g = cctx.createRadialGradient(cx,cy,0,cx,cy,140);
+            if(state==='listening'){ g.addColorStop(0,'rgba(0,255,136,0.7)'); g.addColorStop(1,'rgba(0,255,136,0)'); }
+            else if(state==='thinking'){ g.addColorStop(0,'rgba(255,170,0,0.7)'); g.addColorStop(1,'rgba(255,170,0,0)'); }
+            else { g.addColorStop(0,'rgba(0,255,136,0.3)'); g.addColorStop(1,'rgba(0,255,136,0)'); }
+            cctx.fillStyle=g; cctx.fillRect(0,0,280,280);
+            // Core
+            cctx.beginPath(); cctx.arc(cx,cy,18,0,Math.PI*2);
+            cctx.fillStyle = state==='idle'?'rgba(0,255,136,0.35)':'rgba(0,255,136,0.7)';
+            cctx.fill();
+            // Particles
+            for(let i=0;i<25;i++){
+                const a=(t*0.015+i*0.4)%(Math.PI*2);
+                const d=105+Math.sin(t*0.02+i)*20;
+                cctx.beginPath();
+                cctx.arc(cx+Math.cos(a)*d, cy+Math.sin(a)*d, 2, 0, Math.PI*2);
+                cctx.fillStyle=`rgba(0,255,136,${0.2+Math.random()*0.5})`; cctx.fill();
+            }
+            t++; requestAnimationFrame(drawCore);
+        }
+        drawCore();
+
+        // ── Demo Commands ──
+        const term = document.getElementById('termOut');
+        const coreState = document.getElementById('coreState');
+        const cmdIn = document.getElementById('cmdIn');
+        const micBtn = document.getElementById('micBtn');
+
+        function addLine(txt, cls='res') {
+            const l = document.createElement('div');
+            l.className = 't-line ' + cls;
+            l.textContent = `[${new Date().toLocaleTimeString()}] ${txt}`;
+            term.appendChild(l); term.scrollTop = term.scrollHeight;
+        }
+
+        function setState(s, txt) {
+            state = s; coreState.textContent = txt;
+            coreState.style.color = s==='listening'?'#00ff88':s==='thinking'?'#ffaa00':'#00ccff';
+        }
+
+        // Agent bar animations
+        setTimeout(() => document.querySelectorAll('.agent-bar').forEach((b,i) => {
+            b.style.width = [85,60,70,55,92,78,88,95][i]+'%';
+        }), 800);
+
+        // Interactive demo
+        cmdIn.addEventListener('keypress', e => {
+            if(e.key==='Enter' && cmdIn.value.trim()) {
+                const txt = cmdIn.value.trim();
+                addLine('> ' + txt, 'cmd');
+                setState('thinking', 'PROCESSING...');
+                setTimeout(() => {
+                    // Fake responses for demo
+                    if(txt.toLowerCase().includes('attack')){
+                        addLine('🎯 OFFENSIVE SWARM DEPLOYED! VIPER, GHOST, PHANTOM engaging target...', 'ok');
+                    } else if(txt.toLowerCase().includes('defend')){
+                        addLine('🛡️ DEFENSIVE PROTOCOLS ACTIVATED! SENTINEL, WALL, OWL securing perimeter...', 'ok');
+                    } else if(txt.toLowerCase().includes('scan')){
+                        addLine('🔍 SCAN INITIATED. Nmap running. Check terminal for results.', 'ok');
+                    } else if(txt.toLowerCase().includes('autonomy')){
+                        addLine('🧠 FULL AUTONOMY ENABLED. The system will now self-operate and self-defend.', 'ok');
+                    } else if(txt.toLowerCase().includes('iron')){
+                        addLine('I am not Jarvis, sir. I am AEGIS. Shall I prepare the suit?', 'ok');
+                    } else {
+                        addLine('Command executed successfully.', 'ok');
+                    }
+                    setState('speaking', 'RESPONDING...');
+                    setTimeout(()=>setState('idle','SYSTEM READY'), 2500);
+                }, 1200);
+                cmdIn.value = '';
+            }
+        });
+
+        micBtn.addEventListener('click', () => {
+            micBtn.classList.toggle('active');
+            if(micBtn.classList.contains('active')) {
+                setState('listening','LISTENING...');
+                addLine('🎤 Voice recognition active. Speak now...', 'cmd');
+            } else {
+                setState('idle','SYSTEM READY');
+            }
+        });
+
+        // Metrics simulation
+        setInterval(() => {
+            const cpu = Math.floor(20+Math.random()*35);
+            document.getElementById('cpuVal').textContent = cpu+'%';
+            document.getElementById('cpuBar').style.width = cpu+'%';
+            const mem = (2+Math.random()*2.5).toFixed(1);
+            document.getElementById('memVal').textContent = mem+'GB / 8GB';
+            document.getElementById('memBar').style.width = (mem/8*100)+'%';
+        }, 2000);
+
+        // Clock
+        setInterval(() => {
+            document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US',{hour12:false});
+        }, 1000);
+
+        // Resize
+        window.addEventListener('resize', () => { mc.width=window.innerWidth; mc.height=window.innerHeight; });
+    </script>
+</body>
+</html>

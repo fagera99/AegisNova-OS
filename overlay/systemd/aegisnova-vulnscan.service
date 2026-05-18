@@ -1,0 +1,17 @@
+[Unit]
+Description=AegisNova Automated Vulnerability Scanner
+Documentation=https://github.com/aegisnova/os
+After=network.target docker.service
+Wants=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/local/bin/aegisnova-vulnscan.sh --now
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aegisnova-vulnscan
+
+[Install]
+WantedBy=multi-user.target

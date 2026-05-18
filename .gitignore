@@ -1,0 +1,46 @@
+# Build artifacts
+kernel-build/
+live-build-config/
+*.iso
+*.iso.sha512
+*.iso.asc
+iso-build.log
+build.log
+# Keep directory placeholders
+!**/.gitkeep
+
+# Environment secrets
+.env
+/etc/aegisnova/env
+
+# Models (too large for git)
+*.gguf
+*.bin
+models/
+
+# OS artifacts
+*.deb
+*.changes
+*.buildinfo
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Test results
+tests/results/
+
+# Node
+node_modules/
+
+# Docker
+.docker/

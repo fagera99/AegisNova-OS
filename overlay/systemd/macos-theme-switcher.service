@@ -1,0 +1,15 @@
+[Unit]
+Description=AegisNova macOS Theme Switcher
+After=graphical.target
+Wants=graphical.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/local/bin/macos-theme-switcher.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=macos-theme-switcher
+
+[Install]
+WantedBy=graphical.target

@@ -1,0 +1,65 @@
+# ═══════════════════════════════════════════════════════════
+# AegisNova OS — Blue-Team Package List
+# ═══════════════════════════════════════════════════════════
+
+# Network Monitoring
+suricata
+zeek
+wireshark
+tcpdump
+snort
+tshark
+ngrep
+ntopng
+
+# EDR / Endpoint
+wazuh-agent
+osquery
+auditd
+sysmon-for-linux
+
+# Log & SIEM
+elasticsearch
+kibana
+logstash
+filebeat
+graylog-server
+
+# Forensics
+volatility3
+autopsy
+sleuthkit
+foremost
+binwalk
+bulk-extractor
+dc3dd
+plaso
+
+# Vulnerability Management
+openvas
+gvm
+
+# Threat Intel / IR
+yara
+clamav
+chkrootkit
+rkhunter
+
+# Hardening
+lynis
+trivy
+fapolicyd
+apparmor
+apparmor-utils
+apparmor-profiles
+apparmor-profiles-extra
+
+# Monitoring / Observability
+prometheus
+grafana
+netdata
+htop
+iotop
+sysstat
+bpftrace
+bpfcc-tools

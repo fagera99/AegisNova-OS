@@ -1,0 +1,19 @@
+Package: redteam-meta
+Version: 1.0.0-1
+Section: metapackages
+Priority: optional
+Architecture: all
+Maintainer: AegisNova OS Team <security@aegisnova.local>
+Depends: nmap, amass, spiderfoot, theharvester, recon-ng, masscan,
+         metasploit-framework, exploitdb, sqlmap, commix, beef-xss,
+         empire-powershell, crackmapexec, bloodhound, pwncat, evil-winrm,
+         impacket-scripts, hashcat, john, hydra, medusa, responder,
+         veil, burpsuite, zaproxy, nikto, wfuzz, ffuf, gobuster,
+         feroxbuster, aircrack-ng, wifite, bettercap,
+         seclists, wordlists, proxychains4, tor, socat, ncat
+Description: AegisNova OS — Red-Team Meta-Package
+ Installs all offensive security tools included in AegisNova OS.
+ Categories: Recon, Exploitation, Post-Exploitation, Credential
+ Harvesting, Defense Evasion, Web App Testing, Wireless, and C2.
+ .
+ WARNING: These tools are for authorized testing only.

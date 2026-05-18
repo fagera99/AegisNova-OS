@@ -1,0 +1,19 @@
+[Unit]
+Description=AegisNova Blue-Team Analyst AI (Jupyter + Security Copilot)
+Documentation=https://github.com/AegisNova/docs
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory=/opt/aegisnova/docker
+ExecStart=/usr/bin/docker compose -f blue-analyst.yml up -d
+ExecStop=/usr/bin/docker compose -f blue-analyst.yml down
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=blue-analyst
+
+[Install]
+WantedBy=multi-user.target

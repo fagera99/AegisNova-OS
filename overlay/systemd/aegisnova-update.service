@@ -1,0 +1,17 @@
+[Unit]
+Description=AegisNova System Update & Security Patch
+Documentation=https://github.com/aegisnova/os
+After=network.target
+Wants=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/local/bin/aegisnova-update.sh --security-only
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aegisnova-update
+
+[Install]
+WantedBy=multi-user.target

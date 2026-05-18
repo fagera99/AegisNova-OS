@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEGIS — Neural Interface</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #00ff88;
+            --primary-dim: rgba(0, 255, 136, 0.3);
+            --secondary: #00ccff;
+            --danger: #ff3366;
+            --warning: #ffaa00;
+            --bg: #050505;
+            --panel-bg: rgba(10, 20, 30, 0.9);
+            --grid-line: rgba(0, 255, 136, 0.1);
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+        
+        /* ── Animated Grid Background ── */
+        #grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+        
+        /* ── Matrix Rain Effect ── */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.15;
+        }
+        
+        /* ── Scan Line ── */
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            animation: scanDown 4s linear infinite;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 0 20px var(--primary);
+        }
+        
+        @keyframes scanDown {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        
+        /* ── Main Layout ── */
+        .hud-container {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+            grid-template-rows: 60px 1fr 180px;
+            gap: 15px;
+            padding: 15px;
+        }
+        
+        /* ── Panels ── */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-dim);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        
+        .panel-header {
+            padding: 8px 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 1px solid var(--primary-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .panel-header::before {
+            content: '◆';
+            color: var(--primary);
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        /* ── Top Bar ── */
+        .top-bar {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.2em;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 20px var(--primary-dim);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px var(--primary-dim); }
+            50% { box-shadow: 0 0 40px var(--primary); }
+        }
+        
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5em;
+            font-weight: 900;
+            letter-spacing: 8px;
+            text-shadow: 0 0 20px var(--primary);
+        }
+        
+        .system-status {
+            display: flex;
+            gap: 20px;
+            font-size: 0.75em;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: blink 2s infinite;
+        }
+        
+        .status-dot.warning { background: var(--warning); }
+        .status-dot.danger { background: var(--danger); }
+        
+        /* ── Left Panel: Agent Status ── */
+        .agent-list {
+            padding: 10px;
+            overflow-y: auto;
+            height: calc(100% - 35px);
+        }
+        
+        .agent-item {
+            padding: 8px;
+            margin-bottom: 6px;
+            border-left: 3px solid var(--primary);
+            background: rgba(0, 255, 136, 0.05);
+            font-size: 0.8em;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .agent-item:hover {
+            background: rgba(0, 255, 136, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .agent-name {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        
+        .agent-type {
+            font-size: 0.75em;
+            opacity: 0.7;
+        }
+        
+        .agent-status-bar {
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            margin-top: 4px;
+            width: 0%;
+            transition: width 1s;
+        }
+        
+        /* ── Center: Neural Core ── */
+        .neural-core {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .core-visualization {
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+        
+        #core-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .core-status {
+            text-align: center;
+            margin-top: 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .core-state {
+            font-size: 1.2em;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--secondary);
+        }
+        
+        .core-command {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+            padding: 0 20px;
+        }
+        
+        .command-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1em;
+            outline: none;
+            border-radius: 2px;
+        }
+        
+        .command-input::placeholder {
+            color: rgba(0, 255, 136, 0.3);
+        }
+        
+        .mic-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--primary);
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--primary);
+            font-size: 1.3em;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mic-btn:hover {
+            background: rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 30px var(--primary-dim);
+        }
+        
+        .mic-btn.active {
+            background: var(--danger);
+            border-color: var(--danger);
+            animation: micPulse 1s infinite;
+        }
+        
+        @keyframes micPulse {
+            0%, 100% { box-shadow: 0 0 10px var(--danger); }
+            50% { box-shadow: 0 0 30px var(--danger), 0 0 60px var(--danger); }
+        }
+        
+        /* ── Right Panel: System Metrics ── */
+        .metrics-container {
+            padding: 10px;
+            height: calc(100% - 35px);
+            overflow-y: auto;
+        }
+        
+        .metric-item {
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 2px solid var(--secondary);
+        }
+        
+        .metric-label {
+            font-size: 0.7em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--secondary);
+            margin-bottom: 4px;
+        }
+        
+        .metric-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1em;
+        }
+        
+        .metric-bar {
+            height: 3px;
+            background: #333;
+            margin-top: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .metric-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.5s;
+            position: relative;
+        }
+        
+        .metric-bar-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, white);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-20px); }
+            100% { transform: translateX(20px); }
+        }
+        
+        /* ── Bottom: Terminal Output ── */
+        .terminal-panel {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .terminal-output {
+            flex: 1;
+            padding: 10px;
+            font-size: 0.85em;
+            overflow-y: auto;
+            color: #ccffdd;
+            line-height: 1.6;
+        }
+        
+        .terminal-line {
+            margin-bottom: 4px;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .terminal-line.command {
+            color: var(--secondary);
+        }
+        
+        .terminal-line.response {
+            color: #ccffdd;
+            padding-left: 20px;
+            border-left: 2px solid var(--primary-dim);
+        }
+        
+        .terminal-line.error {
+            color: var(--danger);
+        }
+        
+        .terminal-line.success {
+            color: var(--primary);
+        }
+        
+        /* ── Glitch Effect ── */
+        .glitch {
+            position: relative;
+        }
+        
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--danger);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim 3s infinite linear alternate-reverse;
+        }
+        
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 var(--secondary);
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+        
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 85px, 0); }
+            20% { clip: rect(65px, 9999px, 99px, 0); }
+            40% { clip: rect(15px, 9999px, 135px, 0); }
+            60% { clip: rect(80px, 9999px, 5px, 0); }
+            80% { clip: rect(40px, 9999px, 110px, 0); }
+            100% { clip: rect(95px, 9999px, 60px, 0); }
+        }
+        
+        /* ── Loading Spinner ── */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid transparent;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-dim);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* ── Responsive ── */
+        @media (max-width: 1200px) {
+            .hud-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto;
+            }
+            
+            .panel.left,
+            .panel.right {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="grid-bg"></div>
+    <canvas id="matrix-canvas"></canvas>
+    <div class="scan-line"></div>
+    
+    <div class="hud-container">
+        <!-- Top Bar -->
+        <div class="panel top-bar">
+            <div class="logo-section">
+                <div class="logo-icon">A</div>
+                <div class="logo-text glitch" data-text="AEGIS">AEGIS</div>
+            </div>
+            
+            <div class="system-status">
+                <div class="status-item">
+                    <div class="status-dot" id="brain-dot"></div>
+                    <span>BRAIN: <span id="brain-status">ONLINE</span></span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot" id="security-dot"></div>
+                    <span>SECURITY: <span id="security-status">ARMED</span></span>
+                </div>
+                <div class="status-item">
+                    <div class="status-dot" id="net-dot"></div>
+                    <span>NET: <span id="net-status">ACTIVE</span></span>
+                </div>
+                <div class="status-item">
+                    <span id="clock">00:00:00</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Left: Agent Swarm -->
+        <div class="panel left">
+            <div class="panel-header">Agent Swarm</div>
+            <div class="agent-list" id="agent-list">
+                <div class="agent-item">
+                    <div class="agent-name">VIPER</div>
+                    <div class="agent-type">Offensive Coordinator</div>
+                    <div class="agent-status-bar" style="width: 85%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">SENTINEL</div>
+                    <div class="agent-type">Perimeter Guardian</div>
+                    <div class="agent-status-bar" style="width: 92%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">GHOST</div>
+                    <div class="agent-type">Silent Infiltrator</div>
+                    <div class="agent-status-bar" style="width: 60%"></div>
+                </div>
+                <div class="agent-item">
+                    <div class="agent-name">OWL</div>
+                    <div class="agent-type">Threat Hunter</div>
+                    <div class="agent-status-bar" style="width: 78%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center: Neural Core -->
+        <div class="panel neural-core">
+            <div class="core-visualization">
+                <canvas id="core-canvas"></canvas>
+            </div>
+            
+            <div class="core-status">
+                <div class="core-state" id="core-state">SYSTEM READY</div>
+            </div>
+            
+            <div class="core-command">
+                <input type="text" class="command-input" id="command-input" 
+                       placeholder="Enter command or say 'Hey Aegis'..." autofocus>
+                <button class="mic-btn" id="mic-btn">🎤</button>
+            </div>
+        </div>
+        
+        <!-- Right: System Metrics -->
+        <div class="panel right">
+            <div class="panel-header">System Metrics</div>
+            <div class="metrics-container" id="metrics">
+                <div class="metric-item">
+                    <div class="metric-label">CPU Load</div>
+                    <div class="metric-value" id="cpu-val">34%</div>
+                    <div class="metric-bar">
+                        <div class="metric-bar-fill" id="cpu-bar" style="width: 34%"></div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-label">Memory</div>
+                    <div class="metric-value" id="mem-val">2.4GB / 8GB</div>
+                    <div class="metric-bar">
+                        <div class="metric-bar-fill" id="mem-bar" style="width: 30%"></div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-label">Network</div>
+                    <div class="metric-value" id="net-val">↑ 2.4MB/s ↓ 8.1MB/s</div>
+                    <div class="metric-bar">
+                        <div class="metric-bar-fill" id="net-bar" style="width: 45%"></div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-label">Threat Level</div>
+                    <div class="metric-value" id="threat-val" style="color: var(--primary)">LOW</div>
+                    <div class="metric-bar">
+                        <div class="metric-bar-fill" id="threat-bar" style="width: 15%"></div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-label">Active Agents</div>
+                    <div class="metric-value" id="agents-val">4 / 50</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom: Terminal -->
+        <div class="panel terminal-panel">
+            <div class="panel-header">Command Output</div>
+            <div class="terminal-output" id="terminal">
+                <div class="terminal-line success">[AEGIS] Neural interface initialized. Awaiting your command.</div>
+                <div class="terminal-line">Type a command or click the microphone to speak.</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ── Matrix Rain ──
+        const matrixCanvas = document.getElementById('matrix-canvas');
+        const matrixCtx = matrixCanvas.getContext('2d');
+        matrixCanvas.width = window.innerWidth;
+        matrixCanvas.height = window.innerHeight;
+        
+        const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const fontSize = 14;
+        const columns = matrixCanvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        
+        function drawMatrix() {
+            matrixCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+            
+            matrixCtx.fillStyle = '#0F0';
+            matrixCtx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        // ── Neural Core Visualization ──
+        const coreCanvas = document.getElementById('core-canvas');
+        const coreCtx = coreCanvas.getContext('2d');
+        coreCanvas.width = 300;
+        coreCanvas.height = 300;
+        
+        let coreTime = 0;
+        let coreState = 'idle';
+        
+        function drawNeuralCore() {
+            const cx = coreCanvas.width / 2;
+            const cy = coreCanvas.height / 2;
+            
+            coreCtx.clearRect(0, 0, coreCanvas.width, coreCanvas.height);
+            
+            // Outer rings
+            for (let i = 0; i < 3; i++) {
+                const radius = 80 + i * 30 + Math.sin(coreTime * 0.02 + i) * 10;
+                const alpha = 0.1 + Math.sin(coreTime * 0.03 + i * 2) * 0.1;
+                
+                coreCtx.beginPath();
+                coreCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+                coreCtx.strokeStyle = `rgba(0, 255, 136, ${alpha})`;
+                coreCtx.lineWidth = 2;
+                coreCtx.stroke();
+            }
+            
+            // Rotating arc segments
+            for (let i = 0; i < 8; i++) {
+                const angle = (coreTime * 0.01 + i * Math.PI / 4) % (Math.PI * 2);
+                const radius = 100;
+                
+                coreCtx.beginPath();
+                coreCtx.arc(cx, cy, radius, angle, angle + 0.5);
+                coreCtx.strokeStyle = `rgba(0, 255, 136, ${0.3 + Math.sin(coreTime * 0.05 + i) * 0.2})`;
+                coreCtx.lineWidth = 4;
+                coreCtx.stroke();
+            }
+            
+            // Central orb
+            const orbRadius = 30 + Math.sin(coreTime * 0.05) * 10;
+            const gradient = coreCtx.createRadialGradient(cx, cy, 0, cx, cy, orbRadius * 2);
+            
+            if (coreState === 'listening') {
+                gradient.addColorStop(0, 'rgba(0, 255, 136, 0.8)');
+                gradient.addColorStop(1, 'rgba(0, 255, 136, 0)');
+            } else if (coreState === 'thinking') {
+                gradient.addColorStop(0, 'rgba(255, 170, 0, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 170, 0, 0)');
+            } else if (coreState === 'speaking') {
+                gradient.addColorStop(0, 'rgba(0, 170, 255, 0.8)');
+                gradient.addColorStop(1, 'rgba(0, 170, 255, 0)');
+            } else {
+                gradient.addColorStop(0, 'rgba(0, 255, 136, 0.4)');
+                gradient.addColorStop(1, 'rgba(0, 255, 136, 0)');
+            }
+            
+            coreCtx.fillStyle = gradient;
+            coreCtx.fillRect(0, 0, coreCanvas.width, coreCanvas.height);
+            
+            // Inner core
+            coreCtx.beginPath();
+            coreCtx.arc(cx, cy, 20, 0, Math.PI * 2);
+            coreCtx.fillStyle = coreState === 'idle' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(0, 255, 136, 0.6)';
+            coreCtx.fill();
+            
+            // Particles
+            for (let i = 0; i < 20; i++) {
+                const angle = (coreTime * 0.02 + i * 0.5) % (Math.PI * 2);
+                const dist = 120 + Math.sin(coreTime * 0.03 + i) * 30;
+                const px = cx + Math.cos(angle) * dist;
+                const py = cy + Math.sin(angle) * dist;
+                
+                coreCtx.beginPath();
+                coreCtx.arc(px, py, 2, 0, Math.PI * 2);
+                coreCtx.fillStyle = `rgba(0, 255, 136, ${0.3 + Math.random() * 0.5})`;
+                coreCtx.fill();
+            }
+            
+            coreTime++;
+            requestAnimationFrame(drawNeuralCore);
+        }
+        
+        // ── System Metrics Simulation ──
+        function updateMetrics() {
+            const cpu = Math.floor(20 + Math.random() * 40);
+            const mem = Math.floor(2 + Math.random() * 3);
+            const netUp = (Math.random() * 5).toFixed(1);
+            const netDown = (Math.random() * 10).toFixed(1);
+            
+            document.getElementById('cpu-val').textContent = cpu + '%';
+            document.getElementById('cpu-bar').style.width = cpu + '%';
+            
+            document.getElementById('mem-val').textContent = mem.toFixed(1) + 'GB / 8GB';
+            document.getElementById('mem-bar').style.width = (mem / 8 * 100) + '%';
+            
+            document.getElementById('net-val').textContent = `↑ ${netUp}MB/s ↓ ${netDown}MB/s`;
+            document.getElementById('net-bar').style.width = (Math.random() * 60 + 20) + '%';
+            
+            // Threat level color
+            const threat = Math.random();
+            const threatVal = document.getElementById('threat-val');
+            const threatBar = document.getElementById('threat-bar');
+            if (threat > 0.9) {
+                threatVal.textContent = 'CRITICAL';
+                threatVal.style.color = 'var(--danger)';
+                threatBar.style.width = '90%';
+                threatBar.style.background = 'var(--danger)';
+            } else if (threat > 0.7) {
+                threatVal.textContent = 'ELEVATED';
+                threatVal.style.color = 'var(--warning)';
+                threatBar.style.width = '60%';
+                threatBar.style.background = 'var(--warning)';
+            } else {
+                threatVal.textContent = 'LOW';
+                threatVal.style.color = 'var(--primary)';
+                threatBar.style.width = '15%';
+                threatBar.style.background = 'linear-gradient(90deg, var(--primary), var(--secondary))';
+            }
+        }
+        
+        // ── Clock ──
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+        }
+        
+        // ── Command Handling ──
+        const commandInput = document.getElementById('command-input');
+        const micBtn = document.getElementById('mic-btn');
+        const terminal = document.getElementById('terminal');
+        const coreStateText = document.getElementById('core-state');
+        
+        function addTerminalLine(text, type = 'response') {
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function setCoreState(state, text) {
+            coreState = state;
+            coreStateText.textContent = text;
+            coreStateText.style.color = state === 'listening' ? 'var(--primary)' : 
+                                       state === 'thinking' ? 'var(--warning)' :
+                                       state === 'speaking' ? 'var(--secondary)' : 'var(--primary)';
+        }
+        
+        async function sendCommand(text) {
+            addTerminalLine(`> ${text}`, 'command');
+            setCoreState('thinking', 'PROCESSING...');
+            
+            try {
+                const response = await fetch('/command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: text })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addTerminalLine(data.response, 'success');
+                } else {
+                    addTerminalLine(data.response || 'Command failed.', 'error');
+                }
+                
+                setCoreState('speaking', 'RESPONDING...');
+                setTimeout(() => setCoreState('idle', 'SYSTEM READY'), 3000);
+                
+            } catch (e) {
+                addTerminalLine('Network error. Assistant backend not running.', 'error');
+                setCoreState('idle', 'SYSTEM READY');
+            }
+        }
+        
+        commandInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && commandInput.value.trim()) {
+                sendCommand(commandInput.value.trim());
+                commandInput.value = '';
+            }
+        });
+        
+        micBtn.addEventListener('click', () => {
+            micBtn.classList.toggle('active');
+            if (micBtn.classList.contains('active')) {
+                setCoreState('listening', 'LISTENING...');
+                addTerminalLine('Voice recognition active. Speak now...', 'command');
+            } else {
+                setCoreState('idle', 'SYSTEM READY');
+            }
+        });
+        
+        // ── Initialize ──
+        setInterval(drawMatrix, 50);
+        drawNeuralCore();
+        setInterval(updateMetrics, 2000);
+        setInterval(updateClock, 1000);
+        updateClock();
+        
+        // Agent list animation
+        const agentItems = document.querySelectorAll('.agent-item');
+        agentItems.forEach((item, i) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(-20px)';
+            setTimeout(() => {
+                item.style.transition = 'all 0.5s';
+                item.style.opacity = '1';
+                item.style.transform = 'translateX(0)';
+            }, 500 + i * 200);
+        });
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

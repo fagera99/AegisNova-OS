@@ -1,0 +1,3 @@
+#!/bin/bash
+# AegisNova AI Model Manager CLI Wrapper
+python3 /usr/local/bin/model_manager.py "$@"

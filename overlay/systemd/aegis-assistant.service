@@ -1,0 +1,29 @@
+[Unit]
+Description=AegisNova AI Assistant (JARVIS-Style Voice + Visual UI)
+Documentation=https://github.com/aegisnova/os
+After=network.target aegis-brain.service ai-shell.service
+Wants=network.target
+
+# ═══════════════════════════════════════════════════════════
+# AEGIS ASSISTANT — Your AI Security Companion
+# Provides voice control, visual wave animations, and
+# natural language command execution.
+# ═══════════════════════════════════════════════════════════
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=/root/.Xauthority"
+Environment="PULSE_RUNTIME_PATH=/run/user/0/pulse"
+ExecStart=/usr/bin/python3 /usr/local/bin/aegisnova-assistant.py --full
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aegis-assistant
+
+[Install]
+WantedBy=graphical.target

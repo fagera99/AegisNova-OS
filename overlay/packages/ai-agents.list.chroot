@@ -1,0 +1,105 @@
+# ═══════════════════════════════════════════════════════════
+# AegisNova OS — AI Agent Dependencies
+# ═══════════════════════════════════════════════════════════
+
+# Container runtime
+docker-ce
+docker-ce-cli
+containerd.io
+docker-compose-plugin
+
+# Python ecosystem
+python3
+python3-pip
+python3-venv
+python3-dev
+python3-full
+jupyter-notebook
+
+# Build tools (for llama.cpp compilation)
+build-essential
+cmake
+git
+curl
+wget
+jq
+
+# eBPF tooling
+bpftrace
+bpfcc-tools
+libbpf-dev
+linux-headers-amd64
+
+# Cryptography (for secrets vault)
+python3-pycryptodome
+python3-cryptography
+
+# HTTP / API client
+python3-requests
+python3-urllib3
+
+# YAML support (Sigma rules)
+python3-yaml
+
+# OSINT tools
+subfinder
+theharvester
+amass
+whois
+dnsutils
+
+# Network scanning
+nmap
+masscan
+
+# Web vulnerability scanning
+nuclei
+
+# System monitoring
+net-tools
+iputils-ping
+
+# Voice control
+python3-speechrecognition
+python3-pyaudio
+portaudio19-dev
+python3-pyttsx3
+espeak
+espeak-ng
+libespeak1
+pulseaudio
+alsa-utils
+
+# GUI automation
+wmctrl
+xdotool
+
+# Secure wipe tools
+secure-delete
+
+# YubiKey support
+libpam-u2f
+yubikey-manager
+yubikey-personalization
+libfido2-1
+
+# TPM 2.0 support
+tpm2-tools
+tpm2-abrmd
+libtss2-tcti-tabrmd0
+
+# Disk encryption / LUKS persistence
+cryptsetup
+parted
+dosfstools
+
+# File integrity
+aide
+tripwire
+
+# Log analysis
+rsyslog
+logrotate
+
+# LangChain / AI dependencies (installed via pip post-boot)
+# pip install langchain langchain-community openai anthropic

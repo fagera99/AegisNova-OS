@@ -1,0 +1,89 @@
+# ═══════════════════════════════════════════════════════════
+# AegisNova OS — Red-Team Autopilot Docker Stack
+# ═══════════════════════════════════════════════════════════
+version: "3.9"
+
+services:
+  # ── AutoGPT Red-Team Agent ──
+  autogpt-redteam:
+    image: significantgravitas/autogpt:latest
+    container_name: autogpt-redteam
+    restart: unless-stopped
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-placeholder}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o}
+      - LOCAL_LLM_URL=http://llm-proxy:8080/v1
+      - EXECUTE_LOCAL_COMMANDS=true
+      - RESTRICT_TO_WORKSPACE=true
+    volumes:
+      - autogpt-data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - redteam-net
+    depends_on:
+      - llm-proxy
+
+  # ── LLM Proxy (OpenAI-compatible endpoint for local models) ──
+  llm-proxy:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    container_name: llm-proxy
+    restart: unless-stopped
+    command: >
+      -m /models/gemma-2b-Q4_K_M.gguf
+      --host 0.0.0.0
+      --port 8080
+      -t 4
+      -c 4096
+    volumes:
+      - /opt/aegisnova/models:/models:ro
+    ports:
+      - "127.0.0.1:8081:8080"
+    networks:
+      - redteam-net
+
+  # ── Atomic Red Team Runner ──
+  atomic-runner:
+    image: redcanaryco/invoke-atomicredteam:latest
+    container_name: atomic-runner
+    restart: unless-stopped
+    environment:
+      - RESULTS_DIR=/results
+    volumes:
+      - atomic-results:/results
+    networks:
+      - redteam-net
+
+  # ── Metasploit RPC Service ──
+  metasploit:
+    image: metasploitframework/metasploit-framework:latest
+    container_name: metasploit-rpc
+    restart: unless-stopped
+    command: >
+      msfrpcd -P ${MSF_PASSWORD:-changeme} -S -a 0.0.0.0 -p 55553
+    ports:
+      - "127.0.0.1:55553:55553"
+    networks:
+      - redteam-net
+
+  # ── Results Web UI ──
+  results-ui:
+    image: nginx:alpine
+    container_name: redteam-results-ui
+    restart: unless-stopped
+    volumes:
+      - atomic-results:/usr/share/nginx/html/results:ro
+      - ./nginx/redteam-ui.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "127.0.0.1:9090:80"
+    networks:
+      - redteam-net
+
+volumes:
+  autogpt-data:
+  atomic-results:
+
+networks:
+  redteam-net:
+    driver: bridge
+    internal: false

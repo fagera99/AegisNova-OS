@@ -1,0 +1,33 @@
+[Unit]
+Description=AegisNova LLM CLI Assistant (llama.cpp server + Heretic)
+Documentation=https://github.com/ggerganov/llama.cpp https://github.com/p-e-w/heretic
+After=network.target docker.service heretic-decensor.service
+Wants=network.target heretic-decensor.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="LLAMA_PORT=8080"
+Environment="LLAMA_THREADS=4"
+Environment="LLAMA_CTX_SIZE=4096"
+Environment="MODELS_DIR=/opt/aegisnova/models"
+ExecStartPre=/usr/local/bin/ai-shell-setup.sh
+ExecStart=/usr/local/bin/ai-shell-launcher.sh
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ai-shell
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/opt/aegisnova/models /opt/aegisnova/llama.cpp
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target

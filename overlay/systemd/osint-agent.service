@@ -1,0 +1,19 @@
+[Unit]
+Description=AegisNova OSINT Automation Agent
+Documentation=https://github.com/aegisnova/os
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/python3 /usr/local/bin/osint-agent.py --help
+ExecStartPost=/bin/echo "OSINT Agent ready. Use: osint-agent.py --domain <target>"
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=osint-agent
+
+[Install]
+WantedBy=multi-user.target

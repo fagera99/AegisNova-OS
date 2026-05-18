@@ -1,0 +1,31 @@
+[Unit]
+Description=AegisNova BRAIN — Master AI Orchestrator (Live Brain)
+Documentation=https://github.com/aegisnova/os
+After=network.target ai-shell.service
+Wants=network.target
+
+# ═══════════════════════════════════════════════════════════
+# The Aegis Brain is the "live consciousness" of the OS.
+# It spawns agents, orchestrates operations, and enables
+# full system autonomy. Handle with care.
+# ═══════════════════════════════════════════════════════════
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="BRAIN_MODE=passive"
+Environment="MAX_AGENTS=50"
+ExecStart=/usr/bin/python3 /usr/local/bin/aegisnova-brain.py --mode command
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aegis-brain
+
+# Security: Brain needs full system access
+NoNewPrivileges=false
+
+[Install]
+WantedBy=multi-user.target

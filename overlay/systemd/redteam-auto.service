@@ -1,0 +1,19 @@
+[Unit]
+Description=AegisNova Red-Team Autopilot (Docker Compose)
+Documentation=https://github.com/AegisNova/docs
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+WorkingDirectory=/opt/aegisnova/docker
+ExecStart=/usr/bin/docker compose -f redteam-auto.yml up -d
+ExecStop=/usr/bin/docker compose -f redteam-auto.yml down
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=redteam-auto
+
+[Install]
+WantedBy=multi-user.target

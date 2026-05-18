@@ -1,0 +1,33 @@
+Package: blueteam-meta
+Version: 1.0.0-1
+Section: metapackages
+Priority: optional
+Architecture: all
+Maintainer: AegisNova OS Team <security@aegisnova.local>
+Depends: suricata, zeek, wireshark, tcpdump, snort,
+         wazuh-agent, wazuh-manager (>= 4.0), osquery, auditd, sysmon-for-linux,
+         elasticsearch, kibana, logstash, filebeat, graylog,
+         volatility3, autopsy, sleuthkit, foremost, binwalk, plaso,
+         openvas, gvm,
+         yara, clamav, chkrootkit, rkhunter,
+         lynis, trivy, fapolicyd, apparmor, apparmor-utils,
+         prometheus, grafana, netdata, bpftrace,
+         ossec-hids, aide, tripwire,
+         stunnel, openvpn, wireguard-tools,
+         fail2ban, portsentry, psad,
+         python3-scapy, python3-yara, python3-pycryptodome,
+         jq, curl, wget, git, vim,
+         nftables, iptables-persistent,
+         rsyslog, logrotate, cron,
+         openssl, ca-certificates, gnupg
+Description: AegisNova OS — Blue-Team Meta-Package
+ Installs all defensive security tools included in AegisNova OS.
+ Categories: Network Monitoring, EDR/Endpoint, Log & SIEM,
+ Forensics, Vulnerability Management, Threat Intel, Hardening,
+ and Observability.
+ .
+ Includes: Suricata, Zeek, Wireshark, Wazuh, ELK Stack,
+ Volatility3, Autopsy, Lynis, YARA, ClamAV, Prometheus,
+ Grafana, bpftrace, and more.
+ .
+ NOTE: These tools are for authorized defensive operations only.

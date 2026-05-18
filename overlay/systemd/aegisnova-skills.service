@@ -1,0 +1,15 @@
+[Unit]
+Description=AegisNova OS Agent Skills Installer (1000+ Skills)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/bin/aegisnova-skills-installer.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

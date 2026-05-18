@@ -1,0 +1,15 @@
+# AegisNova OS — APT Repository Sources
+# Kali Rolling (primary)
+deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware
+
+# Kali Experimental (bleeding-edge tools)
+# deb http://http.kali.org/kali kali-experimental main contrib non-free
+
+# Wazuh SIEM agent
+deb [signed-by=/usr/share/keyrings/wazuh-keyring.gpg] https://packages.wazuh.com/4.x/apt/ stable main
+
+# Elastic Stack 8.x
+deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main
+
+# Docker CE (for AI agent containers)
+deb [signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bookworm stable

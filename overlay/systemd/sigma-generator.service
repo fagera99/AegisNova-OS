@@ -1,0 +1,17 @@
+[Unit]
+Description=AegisNova Sigma Rule Generator Agent
+Documentation=https://github.com/SigmaHQ/sigma
+After=network.target ai-shell.service
+Wants=network.target
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/bin/python3 /usr/local/bin/sigma-generator.py --linux-rules --output /opt/aegisnova/sigma-rules/
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sigma-generator
+
+[Install]
+WantedBy=multi-user.target

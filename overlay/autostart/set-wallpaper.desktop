@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=AegisNova Wallpaper
+Comment=Set random macOS wallpaper at login
+Exec=/usr/local/bin/set-macos-wallpaper.sh
+Terminal=false
+Hidden=false
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=3

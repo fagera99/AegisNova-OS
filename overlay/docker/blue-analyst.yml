@@ -1,0 +1,100 @@
+# ═══════════════════════════════════════════════════════════
+# AegisNova OS — Blue-Team Analyst AI Docker Stack
+# ═══════════════════════════════════════════════════════════
+version: "3.9"
+
+services:
+  # ── Jupyter Lab with Security Copilot ──
+  jupyter-security:
+    image: jupyter/scipy-notebook:latest
+    container_name: blue-analyst-jupyter
+    restart: unless-stopped
+    environment:
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-aegisnova2024}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-placeholder}
+      - LLM_ENDPOINT=http://llm-blue:8080/v1
+      - GRANT_SUDO=yes
+    user: root
+    volumes:
+      - jupyter-data:/home/jovyan/work
+      - /opt/aegisnova/notebooks:/home/jovyan/notebooks:ro
+      - /var/log:/host-logs:ro
+    ports:
+      - "127.0.0.1:8888:8888"
+    networks:
+      - blueteam-net
+    depends_on:
+      - llm-blue
+
+  # ── Local LLM backend for Blue-Team ──
+  llm-blue:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    container_name: llm-blue
+    restart: unless-stopped
+    command: >
+      -m /models/gemma-2b-Q4_K_M.gguf
+      --host 0.0.0.0
+      --port 8080
+      -t 4
+      -c 4096
+    volumes:
+      - /opt/aegisnova/models:/models:ro
+    networks:
+      - blueteam-net
+
+  # ── Wazuh Manager ──
+  wazuh-manager:
+    image: wazuh/wazuh-manager:latest
+    container_name: wazuh-manager
+    restart: unless-stopped
+    environment:
+      - WAZUH_MANAGER_CONFIG=/etc/wazuh/ossec.conf
+    volumes:
+      - wazuh-data:/var/ossec/data
+      - wazuh-logs:/var/ossec/logs
+    ports:
+      - "127.0.0.1:1514:1514/udp"
+      - "127.0.0.1:1515:1515"
+      - "127.0.0.1:55000:55000"
+    networks:
+      - blueteam-net
+
+  # ── Elasticsearch ──
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - "127.0.0.1:9200:9200"
+    networks:
+      - blueteam-net
+
+  # ── Kibana ──
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "127.0.0.1:5601:5601"
+    networks:
+      - blueteam-net
+    depends_on:
+      - elasticsearch
+
+volumes:
+  jupyter-data:
+  wazuh-data:
+  wazuh-logs:
+  es-data:
+
+networks:
+  blueteam-net:
+    driver: bridge

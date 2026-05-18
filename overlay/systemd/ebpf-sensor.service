@@ -1,0 +1,26 @@
+[Unit]
+Description=AegisNova eBPF Kernel Telemetry Sensor
+Documentation=man:bpftrace(8)
+After=network.target ai-shell.service
+Wants=ai-shell.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="LLM_ENDPOINT=http://127.0.0.1:8080/completion"
+Environment="WEBHOOK_URL="
+Environment="ALERT_THRESHOLD=medium"
+ExecStart=/usr/bin/python3 /usr/local/bin/ebpf-sensor.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ebpf-sensor
+
+# Needs root for eBPF
+AmbientCapabilities=CAP_BPF CAP_PERFMON CAP_SYS_ADMIN CAP_NET_ADMIN
+CapabilityBoundingSet=CAP_BPF CAP_PERFMON CAP_SYS_ADMIN CAP_NET_ADMIN
+
+[Install]
+WantedBy=multi-user.target

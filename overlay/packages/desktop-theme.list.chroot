@@ -1,0 +1,30 @@
+# ═══════════════════════════════════════════════════════════
+# AegisNova OS — Desktop / macOS Theme Dependencies
+# ═══════════════════════════════════════════════════════════
+
+# GNOME Desktop
+gnome-core
+gnome-tweaks
+gnome-shell-extensions
+gnome-shell-extension-dash-to-dock
+gnome-shell-extension-appindicator
+dconf-cli
+dconf-editor
+
+# Display Manager
+gdm3
+
+# Fonts
+fonts-noto
+fonts-liberation
+fonts-firacode
+
+# Theme build dependencies
+sassc
+libglib2.0-dev-bin
+inkscape
+optipng
+
+# Terminal
+gnome-terminal
+tmux
