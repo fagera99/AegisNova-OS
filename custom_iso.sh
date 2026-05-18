@@ -183,10 +183,12 @@ chmod +x "${INCLUDES}/usr/local/bin/aegisnova-welcome.sh" 2>/dev/null || true
 # Step 3e — Copy JARVIS UI and assistant assets
 log "Staging JARVIS neural interface UI ..."
 mkdir -p "${INCLUDES}/opt/aegisnova/assistant/ui"
-# Copy the JARVIS HTML (both from assistant-ui dir and from project root demo)
-cp "${OVERLAY_SRC}/scripts/assistant-ui/index.html" "${INCLUDES}/opt/aegisnova/assistant/ui/index.html" 2>/dev/null || true
-cp "${PROJECT_ROOT}/demo.html" "${INCLUDES}/opt/aegisnova/assistant/ui/demo.html" 2>/dev/null || true
-cp "${OVERLAY_SRC}/scripts/brain_agent_codex.py" "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
+# demo.html is the primary JARVIS UI — serve it as both root (index) and demo.html
+cp "${PROJECT_ROOT}/demo.html"                           "${INCLUDES}/opt/aegisnova/assistant/ui/index.html"  2>/dev/null || true
+cp "${PROJECT_ROOT}/demo.html"                           "${INCLUDES}/opt/aegisnova/assistant/ui/demo.html"   2>/dev/null || true
+# Also include the KDA dashboard
+cp "${OVERLAY_SRC}/scripts/assistant-ui/kda-dashboard.html" "${INCLUDES}/opt/aegisnova/assistant/ui/kda-dashboard.html" 2>/dev/null || true
+cp "${OVERLAY_SRC}/scripts/brain_agent_codex.py"         "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
 
 # Step 4 — Build the ISO
 log "Starting live-build ..."

@@ -37,7 +37,7 @@ ExecStart=/usr/bin/chromium \
     --use-fake-ui-for-media-stream \
     --enable-features=WebRTC \
     --start-fullscreen \
-    http://localhost:9090
+    http://localhost:9090/demo.html
 
 Restart=on-failure
 RestartSec=10
