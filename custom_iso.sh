@@ -51,13 +51,25 @@ for f in redteam.list.chroot blueteam.list.chroot ai-agents.list.chroot desktop-
     cp "${OVERLAY_SRC}/packages/${f}" "${PKG_DIR}/" 2>/dev/null || true
 done
 
-# Systemd units
+# Systemd units — copy all services
 mkdir -p "${INCLUDES}/etc/systemd/system"
 cp "${OVERLAY_SRC}/systemd/"*.service "${INCLUDES}/etc/systemd/system/" 2>/dev/null || true
-WANTS="${INCLUDES}/etc/systemd/system/multi-user.target.wants"
-mkdir -p "${WANTS}"
-for svc in ai-shell ebpf-sensor redteam-auto blue-analyst macos-theme-switcher heretic-decensor ai-proxy ai-master-setup aegisnova-skills mitre-attack-agent sigma-generator osint-agent ir-playbook aegisnova-vulnscan aegisnova-update aegisnova-wipe aegis-brain aegis-assistant; do
-    ln -sf "/etc/systemd/system/${svc}.service" "${WANTS}/${svc}.service" 2>/dev/null || true
+
+# Enable multi-user services (background agents)
+WANTS_MU="${INCLUDES}/etc/systemd/system/multi-user.target.wants"
+mkdir -p "${WANTS_MU}"
+for svc in ai-shell ebpf-sensor redteam-auto blue-analyst macos-theme-switcher \
+           heretic-decensor ai-proxy ai-master-setup aegisnova-skills \
+           mitre-attack-agent sigma-generator osint-agent ir-playbook \
+           aegisnova-vulnscan aegisnova-update aegis-brain; do
+    ln -sf "/etc/systemd/system/${svc}.service" "${WANTS_MU}/${svc}.service" 2>/dev/null || true
+done
+
+# Enable graphical services (JARVIS UI launches on desktop login)
+WANTS_GR="${INCLUDES}/etc/systemd/system/graphical.target.wants"
+mkdir -p "${WANTS_GR}"
+for svc in aegis-ui-server aegis-assistant-kiosk aegis-assistant; do
+    ln -sf "/etc/systemd/system/${svc}.service" "${WANTS_GR}/${svc}.service" 2>/dev/null || true
 done
 
 # Scripts
@@ -166,10 +178,13 @@ cp "${OVERLAY_SRC}/scripts/aegisnova-welcome.sh" "${INCLUDES}/usr/local/bin/" 2>
 chmod +x "${INCLUDES}/usr/local/bin/aegisnova-install.sh" 2>/dev/null || true
 chmod +x "${INCLUDES}/usr/local/bin/aegisnova-welcome.sh" 2>/dev/null || true
 
-# Step 3e — Copy assistant UI and codex
-cp "${OVERLAY_SRC}/scripts/brain_agent_codex.py" "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
+# Step 3e — Copy JARVIS UI and assistant assets
+log "Staging JARVIS neural interface UI ..."
 mkdir -p "${INCLUDES}/opt/aegisnova/assistant/ui"
-cp -r "${OVERLAY_SRC}/scripts/assistant-ui/"* "${INCLUDES}/opt/aegisnova/assistant/ui/" 2>/dev/null || true
+# Copy the JARVIS HTML (both from assistant-ui dir and from project root demo)
+cp "${OVERLAY_SRC}/scripts/assistant-ui/index.html" "${INCLUDES}/opt/aegisnova/assistant/ui/index.html" 2>/dev/null || true
+cp "${PROJECT_ROOT}/demo.html" "${INCLUDES}/opt/aegisnova/assistant/ui/demo.html" 2>/dev/null || true
+cp "${OVERLAY_SRC}/scripts/brain_agent_codex.py" "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
 
 # Step 4 — Build the ISO
 log "Starting live-build ..."

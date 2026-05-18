@@ -1,0 +1,18 @@
+[Unit]
+Description=AegisNova JARVIS UI — HTTP server for the neural interface
+After=network.target
+Before=aegis-assistant-kiosk.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/aegisnova/assistant
+ExecStart=/usr/bin/python3 -m http.server 9090 --directory /opt/aegisnova/assistant/ui
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aegis-ui-server
+
+[Install]
+WantedBy=graphical.target

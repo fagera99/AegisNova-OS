@@ -28,3 +28,12 @@ optipng
 # Terminal
 gnome-terminal
 tmux
+
+# Browser — required for JARVIS kiosk UI
+chromium
+chromium-driver
+
+# X11 utilities (kiosk / display control)
+xdotool
+x11-utils
+unclutter

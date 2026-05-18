@@ -421,14 +421,12 @@ aegisnova-assistant.py --command "scan target 192.168.1.1"
 ```
 
 **🎬 Cinematic Visual Interface Features:**
-- 🌊 **Matrix-style animated waveforms** with real-time particle effects
-- 🎯 **HUD-style dashboard** with system metrics, agent status, and threat levels
-- 📡 **Neural Core visualization** — animated orb that changes color based on state
-- 🎨 **Cyberpunk aesthetic** — neon green grid, scan lines, glitch effects
+- 🎯 **Dark Military HUD** — subtle grid, off-white text, blue accent (#5a9fd4)
+- 📡 **Neural Ring Core** — animated rotating ring with orbiting particles, color shifts by state (standby/blue, listening/green, thinking/amber, speaking/blue pulse)
 - 📊 **Live system metrics** — CPU, Memory, Network, Threat Level bars
-- 🛡️ **Agent Swarm panel** — Shows VIPER, GHOST, SENTINEL, OWL with activity bars
-- 💻 **Integrated terminal output** — Commands and responses in real-time
-- 🎤 **Voice waveform visualization** during listening mode
+- 💬 **Integrated chat panel** — Command history with agent activity feed
+- 🛡️ **Bottom dock** — Quick-switch between Assistant, Terminal, Network, Security, Agents, Brain, Settings
+- 🎤 **Voice state indicator** — "STANDBY / LISTENING / PROCESSING / RESPONDING" text
 
 **🎤 Voice Commands (Say "Hey Aegis" first):**
 

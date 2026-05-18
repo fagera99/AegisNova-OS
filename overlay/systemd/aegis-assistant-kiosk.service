@@ -1,0 +1,49 @@
+[Unit]
+Description=AegisNova JARVIS UI — Chromium Kiosk Display
+After=graphical-session.target aegis-ui-server.service display-manager.service
+Wants=aegis-ui-server.service
+Requires=aegis-ui-server.service
+
+# ═══════════════════════════════════════════════════════════
+# Launches the JARVIS neural interface in full-screen kiosk
+# mode on the main display when the OS boots into desktop.
+# The UI runs at: http://localhost:9090
+# ═══════════════════════════════════════════════════════════
+
+[Service]
+Type=simple
+User=root
+Environment="DISPLAY=:0"
+Environment="XAUTHORITY=/root/.Xauthority"
+Environment="PULSE_RUNTIME_PATH=/run/user/0/pulse"
+
+# Wait 5 seconds for the desktop to fully initialize
+ExecStartPre=/bin/sleep 5
+
+# Launch Chromium in kiosk (full-screen, no chrome, no cursor blink)
+ExecStart=/usr/bin/chromium \
+    --kiosk \
+    --no-sandbox \
+    --disable-infobars \
+    --disable-session-crashed-bubble \
+    --disable-restore-session-state \
+    --disable-translate \
+    --noerrdialogs \
+    --disable-features=TranslateUI \
+    --disable-pinch \
+    --overscroll-history-navigation=0 \
+    --disable-smooth-scrolling \
+    --autoplay-policy=no-user-gesture-required \
+    --use-fake-ui-for-media-stream \
+    --enable-features=WebRTC \
+    --start-fullscreen \
+    http://localhost:9090
+
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aegis-kiosk
+
+[Install]
+WantedBy=graphical.target

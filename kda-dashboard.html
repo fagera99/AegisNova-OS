@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AEGIS — KDA Combat Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg: #0a0a0c;
+            --panel: rgba(12, 14, 18, 0.9);
+            --border: rgba(255, 255, 255, 0.06);
+            --text: #e0e0e5;
+            --text-dim: #5a5a65;
+            --accent: #5a9fd4;
+            --accent-glow: rgba(90, 159, 212, 0.15);
+            --kill: #d45858;
+            --death: #55555a;
+            --assist: #5a8f6e;
+            --gold: #c4a35a;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+            height: 100vh; width: 100vw;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        
+        /* ── Subtle Grid ── */
+        .grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 80px 80px;
+            pointer-events: none; z-index: 1;
+        }
+        
+        /* ── Top Bar ── */
+        .top-bar {
+            height: 48px; background: rgba(0,0,0,0.5);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px; z-index: 10; position: relative;
+        }
+        .top-left {
+            display: flex; align-items: center; gap: 14px;
+        }
+        .logo-text {
+            font-weight: 700; font-size: 1.1em; letter-spacing: 5px;
+        }
+        .top-divider {
+            width: 1px; height: 18px; background: var(--border);
+        }
+        .match-id {
+            font-size: 0.72em; color: var(--text-dim); letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .match-timer {
+            font-size: 0.9em; font-weight: 600; letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* ── Main KDA Display ── */
+        .main-stage {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 5;
+            gap: 60px;
+        }
+        
+        /* KDA Cards */
+        .kda-card {
+            width: 200px; height: 260px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; position: relative;
+            transition: all 0.3s;
+        }
+        .kda-card:hover {
+            border-color: rgba(255,255,255,0.12);
+            transform: translateY(-4px);
+        }
+        .kda-card .label {
+            position: absolute; top: 14px;
+            font-size: 0.65em; letter-spacing: 4px;
+            text-transform: uppercase; color: var(--text-dim);
+        }
+        .kda-card .value {
+            font-size: 4.5em; font-weight: 700;
+            font-variant-numeric: tabular-nums; line-height: 1;
+        }
+        .kda-card .sub {
+            font-size: 0.75em; color: var(--text-dim); margin-top: 8px;
+            letter-spacing: 1px;
+        }
+        .kda-card .trend {
+            position: absolute; bottom: 14px; font-size: 0.7em;
+            letter-spacing: 2px;
+        }
+        
+        .k-card { border-top: 3px solid var(--kill); }
+        .k-card .value { color: var(--kill); }
+        .k-card .trend { color: var(--kill); }
+        
+        .d-card { border-top: 3px solid var(--death); }
+        .d-card .value { color: var(--death); }
+        .d-card .trend { color: var(--death); }
+        
+        .a-card { border-top: 3px solid var(--assist); }
+        .a-card .value { color: var(--assist); }
+        .a-card .trend { color: var(--assist); }
+        
+        /* Ratio center */
+        .ratio-ring {
+            width: 220px; height: 220px; border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            position: relative;
+        }
+        .ratio-ring .kda-ratio {
+            font-size: 3.2em; font-weight: 700; color: var(--gold);
+        }
+        .ratio-ring .kda-label {
+            font-size: 0.7em; color: var(--text-dim); letter-spacing: 3px;
+            text-transform: uppercase; margin-top: 4px;
+        }
+        .ratio-ring .ring-svg {
+            position: absolute; top: -10px; left: -10px;
+            width: 240px; height: 240px; pointer-events: none;
+        }
+        
+        /* ── Bottom: Agent Scoreboard ── */
+        .scoreboard {
+            height: 220px; background: var(--panel);
+            border-top: 1px solid var(--border);
+            z-index: 10; position: relative;
+            padding: 16px 28px;
+            overflow-y: auto;
+        }
+        .scoreboard-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px;
+        }
+        .scoreboard-title {
+            font-size: 0.72em; letter-spacing: 3px;
+            text-transform: uppercase; color: var(--text-dim);
+        }
+        .scoreboard-tabs {
+            display: flex; gap: 16px;
+        }
+        .tab {
+            font-size: 0.72em; letter-spacing: 2px;
+            text-transform: uppercase; color: var(--text-dim);
+            cursor: pointer; padding-bottom: 4px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab:hover { color: var(--text); }
+        
+        /* Agent rows */
+        .agent-row {
+            display: flex; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid var(--border);
+            font-size: 0.85em;
+        }
+        .agent-row:last-child { border-bottom: none; }
+        .agent-rank {
+            width: 28px; color: var(--text-dim); font-weight: 600;
+        }
+        .agent-icon {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 12px; font-size: 0.9em;
+        }
+        .agent-name {
+            width: 100px; font-weight: 600;
+        }
+        .agent-role {
+            width: 80px; font-size: 0.75em; color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+        .agent-stats {
+            display: flex; gap: 24px; margin-left: auto;
+            font-variant-numeric: tabular-nums;
+        }
+        .stat-k { color: var(--kill); width: 32px; text-align: right; }
+        .stat-d { color: var(--death); width: 32px; text-align: right; }
+        .stat-a { color: var(--assist); width: 32px; text-align: right; }
+        .stat-kda { color: var(--gold); width: 50px; text-align: right; font-weight: 600; }
+        .agent-bar {
+            width: 80px; height: 4px; background: rgba(255,255,255,0.06);
+            border-radius: 2px; margin-left: 16px; overflow: hidden;
+        }
+        .agent-bar-fill {
+            height: 100%; border-radius: 2px;
+            transition: width 1s;
+        }
+        
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <div class="grid"></div>
+    
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-left">
+            <div class="logo-text">AEGIS</div>
+            <div class="top-divider"></div>
+            <div class="match-id">Operation: NIGHTFALL // Session: 7A-442</div>
+        </div>
+        <div class="match-timer" id="matchTimer">00:00:00</div>
+    </div>
+    
+    <!-- Main KDA Stage -->
+    <div class="main-stage">
+        <!-- Kills -->
+        <div class="kda-card k-card">
+            <div class="label">Kills</div>
+            <div class="value" id="kVal">0</div>
+            <div class="sub">Threats Neutralized</div>
+            <div class="trend" id="kTrend">▲ +0</div>
+        </div>
+        
+        <!-- KDA Ratio Ring -->
+        <div class="ratio-ring">
+            <svg class="ring-svg" viewBox="0 0 240 240">
+                <circle cx="120" cy="120" r="110" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="3"/>
+                <circle id="ringProgress" cx="120" cy="120" r="110" fill="none" stroke="#c4a35a" stroke-width="3"
+                    stroke-dasharray="691" stroke-dashoffset="691" stroke-linecap="round"
+                    transform="rotate(-90 120 120)" style="transition: stroke-dashoffset 1s;"/>
+            </svg>
+            <div class="kda-ratio" id="kdaRatio">0.00</div>
+            <div class="kda-label">KDA RATIO</div>
+        </div>
+        
+        <!-- Deaths -->
+        <div class="kda-card d-card">
+            <div class="label">Deaths</div>
+            <div class="value" id="dVal">0</div>
+            <div class="sub">Systems Compromised</div>
+            <div class="trend" id="dTrend">▼ 0</div>
+        </div>
+        
+        <!-- Assists -->
+        <div class="kda-card a-card">
+            <div class="label">Assists</div>
+            <div class="value" id="aVal">0</div>
+            <div class="sub">Collaborative Actions</div>
+            <div class="trend" id="aTrend">▲ +0</div>
+        </div>
+    </div>
+    
+    <!-- Bottom Scoreboard -->
+    <div class="scoreboard">
+        <div class="scoreboard-header">
+            <div class="scoreboard-title">Agent Combat Scoreboard</div>
+            <div class="scoreboard-tabs">
+                <div class="tab active" data-filter="all">All Agents</div>
+                <div class="tab" data-filter="offense">Offense</div>
+                <div class="tab" data-filter="defense">Defense</div>
+                <div class="tab" data-filter="intel">Intel</div>
+            </div>
+        </div>
+        <div id="agentList"></div>
+    </div>
+    
+    <script>
+        // Agent database with KDA stats
+        const agents = [
+            { name: 'VIPER', role: 'Offense', icon: '🐍', k: 47, d: 2, a: 31, color: '#d45858', type: 'offense' },
+            { name: 'GHOST', role: 'Offense', icon: '👻', k: 38, d: 4, a: 28, color: '#8a8a9a', type: 'offense' },
+            { name: 'SENTINEL', role: 'Defense', icon: '🛡️', k: 12, d: 0, a: 56, color: '#5a8f6e', type: 'defense' },
+            { name: 'OWL', role: 'Intel', icon: '🦉', k: 5, d: 1, a: 62, color: '#5a9fd4', type: 'intel' },
+            { name: 'PHANTOM', role: 'Offense', icon: '👤', k: 41, d: 3, a: 19, color: '#9a6ad4', type: 'offense' },
+            { name: 'SHIELD', role: 'Defense', icon: '🧱', k: 8, d: 0, a: 48, color: '#4a9a6e', type: 'defense' },
+            { name: 'WALL', role: 'Defense', icon: '🏰', k: 6, d: 0, a: 52, color: '#6a8a9a', type: 'defense' },
+            { name: 'RECON', role: 'Intel', icon: '📡', k: 3, d: 0, a: 44, color: '#c4a35a', type: 'intel' },
+        ];
+        
+        // Calculate totals and ratios
+        function updateKDA() {
+            const totalK = agents.reduce((s,a) => s + a.k, 0);
+            const totalD = agents.reduce((s,a) => s + a.d, 0);
+            const totalA = agents.reduce((s,a) => s + a.a, 0);
+            const ratio = totalD === 0 ? (totalK + totalA) : ((totalK + totalA) / totalD);
+            
+            document.getElementById('kVal').textContent = totalK;
+            document.getElementById('dVal').textContent = totalD;
+            document.getElementById('aVal').textContent = totalA;
+            document.getElementById('kdaRatio').textContent = ratio.toFixed(2);
+            
+            // Update ring progress (0-10 ratio scale)
+            const maxRatio = 10;
+            const pct = Math.min(ratio / maxRatio, 1);
+            const circumference = 2 * Math.PI * 110;
+            document.getElementById('ringProgress').style.strokeDashoffset = circumference * (1 - pct);
+        }
+        
+        function renderAgents(filter='all') {
+            const list = document.getElementById('agentList');
+            list.innerHTML = '';
+            
+            const filtered = filter === 'all' ? agents : agents.filter(a => a.type === filter);
+            // Sort by KDA ratio descending
+            filtered.sort((a,b) => {
+                const ra = a.d === 0 ? a.k+a.a : (a.k+a.a)/a.d;
+                const rb = b.d === 0 ? b.k+b.a : (b.k+b.a)/b.d;
+                return rb - ra;
+            });
+            
+            filtered.forEach((agent, idx) => {
+                const ratio = agent.d === 0 ? (agent.k + agent.a) : ((agent.k + agent.a) / agent.d);
+                const maxK = Math.max(...agents.map(a => a.k + a.a));
+                const barPct = ((agent.k + agent.a) / maxK) * 100;
+                
+                const row = document.createElement('div');
+                row.className = 'agent-row';
+                row.innerHTML = `
+                    <div class="agent-rank">${idx + 1}</div>
+                    <div class="agent-icon" style="border-color:${agent.color}40; color:${agent.color}">${agent.icon}</div>
+                    <div class="agent-name" style="color:${agent.color}">${agent.name}</div>
+                    <div class="agent-role">${agent.role}</div>
+                    <div class="agent-stats">
+                        <div class="stat-k">${agent.k}</div>
+                        <div class="stat-d">${agent.d}</div>
+                        <div class="stat-a">${agent.a}</div>
+                        <div class="stat-kda">${ratio.toFixed(2)}</div>
+                    </div>
+                    <div class="agent-bar">
+                        <div class="agent-bar-fill" style="width:${barPct}%; background:${agent.color}"></div>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+        
+        // Timer
+        let seconds = 0;
+        setInterval(() => {
+            seconds++;
+            const h = String(Math.floor(seconds/3600)).padStart(2,'0');
+            const m = String(Math.floor((seconds%3600)/60)).padStart(2,'0');
+            const s = String(seconds%60).padStart(2,'0');
+            document.getElementById('matchTimer').textContent = `${h}:${m}:${s}`;
+        }, 1000);
+        
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderAgents(tab.dataset.filter);
+            });
+        });
+        
+        // Live update simulation
+        function simulateActivity() {
+            const agent = agents[Math.floor(Math.random() * agents.length)];
+            const action = Math.random();
+            if(action < 0.5) { agent.k++; document.getElementById('kTrend').textContent = '▲ +' + agent.k; }
+            else if(action < 0.7) { agent.a++; document.getElementById('aTrend').textContent = '▲ +' + agent.a; }
+            else if(action < 0.75) { agent.d++; document.getElementById('dTrend').textContent = '▼ ' + agent.d; }
+            updateKDA();
+            renderAgents(document.querySelector('.tab.active').dataset.filter);
+        }
+        
+        setInterval(simulateActivity, 3000);
+        
+        // Init
+        updateKDA();
+        renderAgents();
+    </script>
+</body>
+</html>
