@@ -72,12 +72,6 @@ for svc in aegis-ui-server aegis-assistant-kiosk aegis-assistant; do
     ln -sf "/etc/systemd/system/${svc}.service" "${WANTS_GR}/${svc}.service" 2>/dev/null || true
 done
 
-# Scripts
-mkdir -p "${INCLUDES}/usr/local/bin"
-cp "${OVERLAY_SRC}/scripts/"*.sh "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
-cp "${OVERLAY_SRC}/scripts/"*.py "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
-chmod +x "${INCLUDES}/usr/local/bin/"* 2>/dev/null || true
-
 # Docker Compose stacks
 mkdir -p "${INCLUDES}/opt/aegisnova/docker"
 cp "${OVERLAY_SRC}/docker/"*.yml "${INCLUDES}/opt/aegisnova/docker/" 2>/dev/null || true
@@ -174,11 +168,43 @@ mkdir -p "${INSTALLER_HOOKS}"
 cp "${OVERLAY_SRC}/scripts/aegisnova-installer-hook.sh" "${INSTALLER_HOOKS}/0050-aegisnova-installer.hook" 2>/dev/null || true
 chmod +x "${INSTALLER_HOOKS}/"*.hook 2>/dev/null || true
 
-# Step 3d — Copy installer welcome scripts
-cp "${OVERLAY_SRC}/scripts/aegisnova-install.sh" "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
-cp "${OVERLAY_SRC}/scripts/aegisnova-welcome.sh" "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
-chmod +x "${INCLUDES}/usr/local/bin/aegisnova-install.sh" 2>/dev/null || true
-chmod +x "${INCLUDES}/usr/local/bin/aegisnova-welcome.sh" 2>/dev/null || true
+# Step 3d — Copy all AegisNova scripts into chroot
+log "Staging AegisNova scripts ..."
+mkdir -p "${INCLUDES}/usr/local/bin"
+for script in \
+    aegisnova-assistant.py \
+    aegisnova-brain.py \
+    aegis-system-control.py \
+    aegisnova-mitre-attack-agent.py \
+    aegisnova-sigma-generator.py \
+    aegisnova-osint-agent.py \
+    aegisnova-ir-playbook.py \
+    aegisnova-vulnscan.sh \
+    aegisnova-update.sh \
+    aegisnova-wipe.sh \
+    aegisnova-skills-installer.sh \
+    aegisnova-persistence-setup.sh \
+    aegisnova-mok-enroll.sh \
+    aegisnova-yubikey-setup.sh \
+    aegisnova-install.sh \
+    aegisnova-welcome.sh \
+    ai-master-setup.sh \
+    ai_proxy.py \
+    ai-shell-launcher.sh \
+    ai-shell-setup.sh \
+    ai-shell.sh \
+    macos-theme-switcher.sh \
+    ebpf-sensor.py \
+    secrets-vault.py \
+    model_manager.py \
+    skills_integration.py \
+    agent.py \
+    brain_agent_codex.py; do
+    cp "${OVERLAY_SRC}/scripts/${script}" "${INCLUDES}/usr/local/bin/" 2>/dev/null || true
+    chmod +x "${INCLUDES}/usr/local/bin/${script}" 2>/dev/null || true
+done
+# Fix underscore vs dash naming expected by systemd
+ln -sf /usr/local/bin/ai_proxy.py "${INCLUDES}/usr/local/bin/ai-proxy.py" 2>/dev/null || true
 
 # Step 3e — Copy JARVIS UI and assistant assets
 log "Staging JARVIS neural interface UI ..."

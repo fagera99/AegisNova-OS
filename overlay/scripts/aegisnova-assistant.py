@@ -37,18 +37,33 @@ from enum import Enum
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import socketserver
 
-# Voice imports (with fallbacks)
+# Voice imports (with fallbacks + auto-install)
+STT_AVAILABLE = False
+TTS_AVAILABLE = False
+
 try:
     import speech_recognition as sr
     STT_AVAILABLE = True
 except ImportError:
-    STT_AVAILABLE = False
+    print("[ASSISTANT] speech_recognition missing — attempting auto-install ...")
+    os.system("pip3 install --break-system-packages SpeechRecognition 2>/dev/null || pip3 install SpeechRecognition")
+    try:
+        import speech_recognition as sr
+        STT_AVAILABLE = True
+    except ImportError:
+        STT_AVAILABLE = False
 
 try:
     import pyttsx3
     TTS_AVAILABLE = True
 except ImportError:
-    TTS_AVAILABLE = False
+    print("[ASSISTANT] pyttsx3 missing — attempting auto-install ...")
+    os.system("pip3 install --break-system-packages pyttsx3 2>/dev/null || pip3 install pyttsx3")
+    try:
+        import pyttsx3
+        TTS_AVAILABLE = True
+    except ImportError:
+        TTS_AVAILABLE = False
 
 # ── Configuration ──
 ASSISTANT_DIR = "/opt/aegisnova/assistant"

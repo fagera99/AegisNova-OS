@@ -8,9 +8,9 @@
 
 set -e
 
-# Colors for boot menu
-AEGISNOVA_COLOR="#00FF88"
-AEGISNOVA_BG="#1A1A1A"
+# Colors for boot menu (dark military HUD blue accent)
+AEGISNOVA_COLOR="#5a9fd4"
+AEGISNOVA_BG="#0a0a0c"
 
 echo "[AegisNova] Customizing boot menu..."
 
@@ -18,11 +18,9 @@ echo "[AegisNova] Customizing boot menu..."
 if [[ -d /boot/grub ]]; then
     cat > /boot/grub/aegisnova-theme.txt << 'EOF'
 title-text: ""
-desktop-image: "background.jpg"
-title-color: #00FF88
-message-color: #CCCCCC
-message-bg-color: #1A1A1A
-terminal-box: "terminal_box_*.png"
+title-color: #5a9fd4
+message-color: #e0e0e5
+message-bg-color: #0a0a0c
 EOF
 
     # Update GRUB config for AegisNova
@@ -84,6 +82,31 @@ ModuleName=script
 [script]
 ImageDir=/usr/share/plymouth/themes/aegisnova
 ScriptFile=/usr/share/plymouth/themes/aegisnova/aegisnova.script
+EOF
+
+    # Minimal Plymouth script (dark blue spinner)
+    cat > /usr/share/plymouth/themes/aegisnova/aegisnova.script << 'EOF'
+# AegisNova Plymouth Script
+screen_width = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+# Dark background
+bg = Image.Text("AEGIS NOVA", 1, 1, 1, 1, "Rajdhani", 32);
+bg_sprite = Sprite(bg);
+bg_sprite.SetX((screen_width - bg.GetWidth()) / 2);
+bg_sprite.SetY(screen_height / 2 - 40);
+
+# Blue spinner arc
+spinner = Image.Arc(40, 40, 0, 3.14, 1, 1, 1, 0.35, 0.61, 0.83, 0.9);
+spinner_sprite = Sprite(spinner);
+spinner_sprite.SetX((screen_width - 80) / 2);
+spinner_sprite.SetY(screen_height / 2 + 20);
+
+fun refresh_callback () {
+    spinner_sprite.SetImage(Image.Arc(40, 40, Math.PI * 2 * (GetTime() % 2) / 2, 3.14, 1, 1, 1, 0.35, 0.61, 0.83, 0.9));
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);
 EOF
 fi
 

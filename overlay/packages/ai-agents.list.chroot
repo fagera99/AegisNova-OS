@@ -59,16 +59,15 @@ nuclei
 net-tools
 iputils-ping
 
-# Voice control
-python3-speechrecognition
+# Voice control (NOTE: speechrecognition + pyttsx3 installed via pip post-boot)
 python3-pyaudio
 portaudio19-dev
-python3-pyttsx3
 espeak
 espeak-ng
 libespeak1
 pulseaudio
 alsa-utils
+# pip3 install --break-system-packages SpeechRecognition pyttsx3 2>/dev/null || pip3 install SpeechRecognition pyttsx3
 
 # GUI automation
 wmctrl
