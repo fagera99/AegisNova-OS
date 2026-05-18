@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# ============================================================================
+# AegisNova OS — APT Keyring Import Hook
+# live-build chroot hook: runs inside the chroot BEFORE package installation
+# ============================================================================
+# Imports GPG public keys for all signed APT repositories defined in
+# overlay/apt/aegisnova.list so that apt-get update succeeds.
+# ============================================================================
+set -euo pipefail
+
+log() { echo -e "\e[1;35m[AegisNova APT-Keys]\e[0m $*"; }
+
+# Ensure keyring directory exists
+mkdir -p /usr/share/keyrings
+
+# ---------------------------------------------------------------------------
+# 1 — Wazuh 4.x
+# ---------------------------------------------------------------------------
+log "Importing Wazuh GPG key …"
+curl -fsSL https://packages.wazuh.com/key/GPG-KEY-WAZUH \
+    | gpg --dearmor -o /usr/share/keyrings/wazuh-keyring.gpg 2>/dev/null || \
+wget -qO- https://packages.wazuh.com/key/GPG-KEY-WAZUH \
+    | gpg --dearmor -o /usr/share/keyrings/wazuh-keyring.gpg
+
+# ---------------------------------------------------------------------------
+# 2 — Elastic Stack 8.x
+# ---------------------------------------------------------------------------
+log "Importing Elasticsearch/Kibana GPG key …"
+curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch \
+    | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg 2>/dev/null || \
+wget -qO- https://artifacts.elastic.co/GPG-KEY-elasticsearch \
+    | gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+
+# ---------------------------------------------------------------------------
+# 3 — Docker CE
+# ---------------------------------------------------------------------------
+log "Importing Docker GPG key …"
+curl -fsSL https://download.docker.com/linux/debian/gpg \
+    | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg 2>/dev/null || \
+wget -qO- https://download.docker.com/linux/debian/gpg \
+    | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+# ---------------------------------------------------------------------------
+# Set correct permissions
+# ---------------------------------------------------------------------------
+chmod 644 /usr/share/keyrings/wazuh-keyring.gpg \
+           /usr/share/keyrings/elasticsearch-keyring.gpg \
+           /usr/share/keyrings/docker-archive-keyring.gpg
+
+log "✅ All APT keyrings imported successfully."
+
+# Refresh apt package lists with all repos now trusted
+log "Running apt-get update …"
+apt-get update -qq || true

@@ -164,6 +164,8 @@ done
 log "Staging live-build hooks ..."
 HOOKS_DIR="${LIVE_BUILD_DIR}/kali-config/common/hooks/normal"
 mkdir -p "${HOOKS_DIR}"
+# APT keyring hook MUST run first (lowest number = earliest execution)
+cp "${OVERLAY_SRC}/scripts/0010-apt-keys.hook.chroot" "${HOOKS_DIR}/0010-apt-keys.hook.chroot" 2>/dev/null || true
 cp "${OVERLAY_SRC}/scripts/aegisnova-bootmenu-hook.sh" "${HOOKS_DIR}/0950-aegisnova-bootmenu.hook.chroot" 2>/dev/null || true
 chmod +x "${HOOKS_DIR}/"*.hook.chroot 2>/dev/null || true
 
