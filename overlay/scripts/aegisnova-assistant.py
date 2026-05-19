@@ -19,6 +19,7 @@ Usage:
 """
 
 import os
+import argparse
 import sys
 import json
 import time
@@ -71,9 +72,19 @@ UI_DIR = f"{ASSISTANT_DIR}/ui"
 VOICE_DIR = f"{ASSISTANT_DIR}/voice"
 STATE_FILE = f"{ASSISTANT_DIR}/state.json"
 
-os.makedirs(ASSISTANT_DIR, exist_ok=True)
-os.makedirs(UI_DIR, exist_ok=True)
-os.makedirs(VOICE_DIR, exist_ok=True)
+try:
+    os.makedirs(ASSISTANT_DIR, exist_ok=True)
+    os.makedirs(UI_DIR, exist_ok=True)
+    os.makedirs(VOICE_DIR, exist_ok=True)
+except PermissionError:
+    # Fallback to user home if not root
+    ASSISTANT_DIR = os.path.expanduser("~/.aegisnova/assistant")
+    UI_DIR = f"{ASSISTANT_DIR}/ui"
+    VOICE_DIR = f"{ASSISTANT_DIR}/voice"
+    STATE_FILE = f"{ASSISTANT_DIR}/state.json"
+    os.makedirs(ASSISTANT_DIR, exist_ok=True)
+    os.makedirs(UI_DIR, exist_ok=True)
+    os.makedirs(VOICE_DIR, exist_ok=True)
 
 WAKE_WORDS = ["hey aegis", "ok aegis", "aegis nova", "hello aegis"]
 SLEEP_WORDS = ["sleep", "go away", "shutdown", "goodbye", "stop listening"]
@@ -884,7 +895,7 @@ class ActionExecutor:
     def _allow_ip(self, p):
         ip = p.get("ip", "")
         if ip:
-            self._run_shell(f"nft delete rule inet filter input handle $(nft -a list ruleset | grep '{ip}' | awk '{print $NF}') 2>/dev/null || true")
+            self._run_shell(f"nft delete rule inet filter input handle $(nft -a list ruleset | grep '{ip}' | awk '{{print $NF}}') 2>/dev/null || true")
             return {"success": True, "response": f"IP {ip} allowed."}
         return {"success": False, "response": "Please specify an IP to allow."}
     
@@ -1084,17 +1095,30 @@ class AegisAssistant:
         """Copy the cinematic UI to the assistant directory."""
         import shutil
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        source_ui = os.path.join(script_dir, "assistant-ui", "index.html")
+        # Check multiple possible UI locations
+        ui_candidates = [
+            os.path.join(script_dir, "assistant-ui", "index.html"),
+            "/opt/aegisnova/assistant/ui/index.html",
+            os.path.join(script_dir, "..", "share", "aegisnova", "ui", "index.html"),
+        ]
+        source_ui = None
+        for candidate in ui_candidates:
+            if os.path.exists(candidate):
+                source_ui = candidate
+                break
         
-        if os.path.exists(source_ui):
+        if source_ui:
             shutil.copy2(source_ui, f"{UI_DIR}/index.html")
             print(f"[ASSISTANT] Cinematic UI copied from {source_ui}")
         else:
-            # Fallback: create basic UI
-            print(f"[ASSISTANT] Warning: Cinematic UI not found at {source_ui}")
-            basic_html = "<!DOCTYPE html><html><head><title>AEGIS</title></head><body style='background:#000;color:#0f0;font-family:monospace;text-align:center;padding-top:20%'><h1>AEGIS ASSISTANT</h1><p>System Ready</p></body></html>"
-            with open(f"{UI_DIR}/index.html", 'w') as f:
-                f.write(basic_html)
+            # Fallback: serve the built-in UI if already in place
+            if os.path.exists(f"{UI_DIR}/index.html"):
+                print(f"[ASSISTANT] Using existing UI at {UI_DIR}/index.html")
+            else:
+                print(f"[ASSISTANT] Warning: Cinematic UI not found, generating fallback")
+                basic_html = "<!DOCTYPE html><html><head><title>AEGIS</title></head><body style='background:#000;color:#0f0;font-family:monospace;text-align:center;padding-top:20%'><h1>AEGIS ASSISTANT</h1><p>System Ready</p></body></html>"
+                with open(f"{UI_DIR}/index.html", 'w') as f:
+                    f.write(basic_html)
     
     def _create_request_handler(self):
         """Create HTTP request handler for UI."""

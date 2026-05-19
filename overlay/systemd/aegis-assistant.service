@@ -17,7 +17,8 @@ Group=root
 Environment="DISPLAY=:0"
 Environment="XAUTHORITY=/root/.Xauthority"
 Environment="PULSE_RUNTIME_PATH=/run/user/0/pulse"
-ExecStart=/usr/bin/python3 /usr/local/bin/aegisnova-assistant.py --full
+ExecStartPre=/usr/bin/python3 -m pip install --quiet --break-system-packages SpeechRecognition pyttsx3 2>/dev/null || true
+ExecStart=/usr/bin/python3 /usr/local/bin/aegisnova-assistant.py --web
 ExecStop=/bin/kill -TERM $MAINPID
 Restart=on-failure
 RestartSec=10

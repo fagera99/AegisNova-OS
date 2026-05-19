@@ -3,7 +3,7 @@
 set -euo pipefail
 
 WIN_PROJ="/mnt/e/Linux_AI"
-BUILD_DIR="/tmp/aegisnova-iso-build"
+BUILD_DIR="/opt/aegisnova_build"
 LIVE_BUILD_REPO="https://gitlab.com/kalilinux/build-scripts/live-build-config.git"
 
 log()  { echo -e "\e[1;35m[AegisNova ISO]\e[0m $*"; }
@@ -11,6 +11,13 @@ err()  { echo -e "\e[1;31m[ERROR]\e[0m $*" >&2; exit 1; }
 
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
+
+# 0. Install build dependencies
+log "Installing build dependencies ..."
+apt-get update -qq 2>/dev/null || true
+apt-get install -y -qq --no-install-recommends \
+    live-build git curl wget xorriso isolinux syslinux-common \
+    dosfstools squashfs-tools debootstrap dpkg-dev 2>&1 | tail -3 || true
 
 # 1. Clone live-build-config to ext4
 if [[ -d "${BUILD_DIR}/live-build-config" ]]; then
@@ -70,11 +77,15 @@ for script in \
 done
 ln -sf /usr/local/bin/ai_proxy.py "${INCLUDES}/usr/local/bin/ai-proxy.py" 2>/dev/null || true
 
-# Copy UI
+# Copy UI + JARVIS brain
 mkdir -p "${INCLUDES}/opt/aegisnova/assistant/ui"
 cp "${WIN_PROJ}/demo.html" "${INCLUDES}/opt/aegisnova/assistant/ui/index.html" 2>/dev/null || true
 cp "${WIN_PROJ}/demo.html" "${INCLUDES}/opt/aegisnova/assistant/ui/demo.html" 2>/dev/null || true
+cp "${WIN_PROJ}/jarvis-brain.js" "${INCLUDES}/opt/aegisnova/assistant/ui/jarvis-brain.js" 2>/dev/null || true
 cp "${WIN_PROJ}/overlay/scripts/assistant-ui/kda-dashboard.html" "${INCLUDES}/opt/aegisnova/assistant/ui/" 2>/dev/null || true
+# Copy ai-model helper
+cp "${WIN_PROJ}/overlay/scripts/ai-model" "${INCLUDES}/usr/local/bin/ai-model" 2>/dev/null || true
+chmod +x "${INCLUDES}/usr/local/bin/ai-model" 2>/dev/null || true
 
 # Copy hooks
 HOOKS_DIR="${LBC}/kali-config/common/hooks/normal"
@@ -142,17 +153,23 @@ cd "${LBC}"
 ./build.sh --verbose --arch amd64 --distribution kali-rolling 2>&1 | tee "${BUILD_DIR}/iso-build.log"
 
 # 4. Move ISO back to Windows
-ISO_NAME="kali-linux-$(grep -oP '(?<=KALI_VERSION=)kali-rolling' .getopt.sh >/dev/null 2>&1 && echo 'rolling' || echo '*')-live-amd64.iso"
-BUILT_ISO=$(ls -t images/*.iso 2>/dev/null | head -1)
+BUILT_ISO=$(find . images/ -maxdepth 2 -name '*.iso' -type f 2>/dev/null | head -1)
+if [[ -z "${BUILT_ISO}" ]]; then
+    BUILT_ISO=$(find "${BUILD_DIR}" -maxdepth 3 -name '*.iso' -type f 2>/dev/null | head -1)
+fi
 if [[ -n "${BUILT_ISO}" ]]; then
     log "✅ ISO built: ${BUILT_ISO}"
-    mv "${BUILT_ISO}" "${WIN_PROJ}/AegisNova-v1.0.iso"
+    cp "${BUILT_ISO}" "${WIN_PROJ}/AegisNova-v1.0.iso"
     log "Moved to: ${WIN_PROJ}/AegisNova-v1.0.iso"
     log "Size: $(du -sh "${WIN_PROJ}/AegisNova-v1.0.iso" | cut -f1)"
+    log ""
+    log "To flash to USB:"
+    log "  sudo dd if=/mnt/e/Linux_AI/AegisNova-v1.0.iso of=/dev/sdX bs=4M status=progress conv=fsync"
 else
+    log "ISO files found:"
+    find "${BUILD_DIR}" -name '*.iso' -type f 2>/dev/null || echo "  (none)"
     err "ISO not found! Check ${BUILD_DIR}/iso-build.log"
 fi
 
 # Cleanup
-rm -rf "${BUILD_DIR}"
 log "✅ ALL DONE!"

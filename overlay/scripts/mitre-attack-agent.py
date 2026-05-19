@@ -126,14 +126,14 @@ TECHNIQUES_DB = {
     "T1550.002": {
         "name": "Use Alternate Authentication Material: Pass the Hash",
         "tactics": ["Lateral Movement"],
-        "description": "Adversaries may "pass the hash" using stolen password hashes to move laterally.",
+        "description": "Adversaries may 'pass the hash' using stolen password hashes to move laterally.",
         "platforms": ["Windows"],
         "subtechniques": [],
     },
     "T1550.003": {
         "name": "Use Alternate Authentication Material: Pass the Ticket",
         "tactics": ["Lateral Movement"],
-        "description": "Adversaries may "pass the ticket" using stolen Kerberos tickets to move laterally.",
+        "description": "Adversaries may 'pass the ticket' using stolen Kerberos tickets to move laterally.",
         "platforms": ["Windows"],
         "subtechniques": [],
     },
