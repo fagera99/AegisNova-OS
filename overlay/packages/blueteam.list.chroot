@@ -4,29 +4,29 @@
 
 # Network Monitoring
 suricata
-zeek
+# zeek  # REQUIRES libc6 < 2.38, Kali has 2.42
 wireshark
 tcpdump
 snort
 tshark
 ngrep
-ntopng
+# ntopng  # NOT IN KALI REPO
 
 # EDR / Endpoint
-wazuh-agent
-osquery
+# wazuh-agent  # NOT IN KALI REPO
+# osquery      # NOT IN KALI REPO
 auditd
-sysmon-for-linux
+# sysmon-for-linux  # NOT IN KALI REPO
 
 # Log & SIEM
-elasticsearch
-kibana
-logstash
-filebeat
-graylog-server
+# elasticsearch  # NOT IN KALI REPO
+# kibana         # NOT IN KALI REPO
+# logstash       # NOT IN KALI REPO
+# filebeat       # NOT IN KALI REPO
+# graylog-server  # NOT IN KALI REPO
 
 # Forensics
-volatility3
+# volatility3  # NOT IN KALI REPO
 autopsy
 sleuthkit
 foremost
@@ -37,7 +37,7 @@ plaso
 
 # Vulnerability Management
 openvas
-gvm
+# gvm  # DEPENDENCIES BROKEN in Kali rolling
 
 # Threat Intel / IR
 yara
@@ -48,7 +48,7 @@ rkhunter
 # Hardening
 lynis
 trivy
-fapolicyd
+# fapolicyd  # NOT IN KALI REPO
 apparmor
 apparmor-utils
 apparmor-profiles
@@ -56,8 +56,8 @@ apparmor-profiles-extra
 
 # Monitoring / Observability
 prometheus
-grafana
-netdata
+# grafana  # NOT IN KALI REPO
+# netdata  # NOT IN KALI REPO
 htop
 iotop
 sysstat

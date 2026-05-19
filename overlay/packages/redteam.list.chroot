@@ -17,13 +17,13 @@ nuclei
 # Exploitation
 metasploit-framework
 exploitdb
-searchsploit
+# searchsploit  # NOT IN KALI REPO
 sqlmap
 commix
 beef-xss
 
 # Post-Exploitation
-empire-powershell
+# empire-powershell  # NOT IN KALI REPO
 crackmapexec
 bloodhound
 pwncat
@@ -62,12 +62,12 @@ kismet
 
 # Adversary Simulation
 caldera
-atomic-red-team
+# atomic-red-team  # NOT IN KALI REPO
 
 # Payload / C2
 sliver
 havoc
-covenant
+# covenant  # NOT IN KALI REPO
 
 # Utilities
 seclists

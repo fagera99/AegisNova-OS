@@ -219,8 +219,7 @@ cp "${OVERLAY_SRC}/scripts/brain_agent_codex.py"         "${INCLUDES}/usr/local/
 # Step 4 — Build the ISO
 log "Starting live-build ..."
 cd "${LIVE_BUILD_DIR}"
-./build.sh --verbose --arch amd64 --distribution kali-rolling \
-    --bootappend-live "boot=live components quiet splash persistence" 2>&1 | tee "${PROJECT_ROOT}/iso-build.log"
+./build.sh --verbose --arch amd64 --distribution kali-rolling 2>&1 | tee "${PROJECT_ROOT}/iso-build.log"
 
 # ── Locate the built ISO (live-build places it in current dir = LIVE_BUILD_DIR) ──
 BUILT_ISO_NAME=$(find . -maxdepth 1 -name '*.iso' -printf '%f\n' 2>/dev/null | head -1)

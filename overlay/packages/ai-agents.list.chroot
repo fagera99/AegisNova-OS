@@ -2,11 +2,12 @@
 # AegisNova OS — AI Agent Dependencies
 # ═══════════════════════════════════════════════════════════
 
-# Container runtime
-docker-ce
-docker-ce-cli
-containerd.io
-docker-compose-plugin
+# Container runtime (install docker.io from Kali repos instead)
+# docker-ce  # NOT IN KALI REPO
+# docker-ce-cli  # NOT IN KALI REPO
+# containerd.io  # NOT IN KALI REPO
+# docker-compose-plugin  # NOT IN KALI REPO
+docker.io
 
 # Python ecosystem
 python3
@@ -65,7 +66,7 @@ portaudio19-dev
 espeak
 espeak-ng
 libespeak1
-pulseaudio
+# pulseaudio  # CONFLICTS with pipewire-audio in Kali
 alsa-utils
 # pip3 install --break-system-packages SpeechRecognition pyttsx3 2>/dev/null || pip3 install SpeechRecognition pyttsx3
 
